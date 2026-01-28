@@ -1,0 +1,24 @@
+{
+  "_comment": "Central configuration for PR processing. Edit values for your environment.",
+  "github": {
+    "_comment": "GitHub repository settings and token environment variable name.",
+    "owner": "python-attrs",
+    "repo": "attrs",
+    "token_env": "GITHUB_TOKEN",
+    "user_agent": "python-attrs-pr-scraper"
+  },
+  "paths": {
+    "_comment": "Project paths; relative values are resolved against project_root.",
+    "project_root": ".",
+    "dataset_dir": "dataset",
+    "pr_records": "dataset/PR_records",
+    "new_pr": "dataset/newPR"
+  },
+  "batch": {
+    "_comment": "Batch sizes and pacing for API calls.",
+    "initialize_per_page": 20,
+    "initialize_max_records": 50,
+    "search_batch_size": 50,
+    "search_sleep_seconds": 2
+  }
+}
