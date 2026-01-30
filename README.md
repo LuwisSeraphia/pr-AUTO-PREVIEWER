@@ -12,8 +12,8 @@ PR pre-review toolkit for Python projects. It mines historical PRs to distill re
 ├─ config.py                 # Config loader and default merge logic
 ├─ env.md                    # Environment prerequisites (Python, git, token)
 ├─ dataset/                  # Data and scripts
-│  ├─ PR_records/            # Fetched PR JSON records (Python changes only)
-│  ├─ newPR/                 # Staging area for new PR records (pre-rule-update)
+│  ├─ PR-processed/          # Fetched PR JSON records (Python changes only)
+│  ├─ PR-unprocessed/        # Staging area for new PR records (pre-rule-update)
 │  └─ grapNew_Personlized.py # Fetch new PRs (personalized version in tools/skill)
 ├─ templates/                # Template files
 │  ├─ report_template.md     # Preview/report output format
@@ -64,10 +64,10 @@ PR pre-review toolkit for Python projects. It mines historical PRs to distill re
 Full inputs/outputs are in each skill’s `SKILL.md`; quick view below.
 
 - **initialize**  
-  Input: `dataset/PR_records/*.json`. Output: `rules.md`. Purpose: extract actionable MUST/SHOULD/MAY rules from historical PRs.
+  Input: `dataset/PR-processed/*.json`. Output: `rules.md`. Purpose: extract actionable MUST/SHOULD/MAY rules from historical PRs.
 
 - **update-rules**  
-  Input: staged PR JSONs in `dataset/newPR/`. Output: updated `rules.md` and files moved to `dataset/PR_records/`. Purpose: incrementally evolve the rule set with new patterns. (Runner skips fetch when `newPR` already has files.)
+  Input: staged PR JSONs in `dataset/PR-unprocessed/`. Output: updated `rules.md` and files moved to `dataset/PR-processed/`. Purpose: incrementally evolve the rule set with new patterns. (Runner skips fetch when `PR-unprocessed` already has files.)
 
 - **preview**  
   Input: local `git diff` and current `rules.md`. Output: report via `templates/report_template.md`. Purpose: scan local diffs and list rule hits/violations.
@@ -76,15 +76,15 @@ Full inputs/outputs are in each skill’s `SKILL.md`; quick view below.
   Guidance for authoring or installing skills.
 
 ### Run Tips (skill commands + bash)
-- Initialize rules from scratch (fetch closed PRs, write `dataset/PR_records/*.json`, generate `rules.md`):  
+- Initialize rules from scratch (fetch closed PRs, write `dataset/PR-processed/*.json`, generate `rules.md`):  
   ```bash
   /initialize initialize the rules for me according to the requirements
   ```
-- Stage new PRs for incremental updates (skip fetch if `dataset/newPR/` already has files):  
+- Stage new PRs for incremental updates (skip fetch if `dataset/PR-unprocessed/` already has files):  
   ```bash
   PYTHONPATH=. python tools/pre-review/skills/update-rules/runner.py
   ```
-- Update rules with staged PRs (consume `dataset/newPR/*.json`, merge into `rules.md`, move to `dataset/PR_records/`):  
+- Update rules with staged PRs (consume `dataset/PR-unprocessed/*.json`, merge into `rules.md`, move to `dataset/PR-processed/`):  
   ```bash
   /update-rules update rules for me
   ```

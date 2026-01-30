@@ -7,14 +7,15 @@ DEFAULT_CONFIG = {
     "github": {
         "owner": "python-attrs",
         "repo": "attrs",
+        "token": "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",
         "token_env": "GITHUB_TOKEN",
         "user_agent": "python-attrs-pr-scraper",
     },
     "paths": {
         "project_root": ".",
         "dataset_dir": "dataset",
-        "pr_records": "dataset/PR_records",
-        "new_pr": "dataset/newPR",
+        "pr_records": "dataset/PR-processed",
+        "new_pr": "dataset/PR-unprocessed",
     },
     "batch": {
         "initialize_per_page": 20,

@@ -43,4 +43,4 @@ It should follow the instructions in `rules.md` and `skill.md` to generate struc
 - Parse each new PR diff.
 - Check added/deleted lines against rules.
 - Generate a structured report highlighting potential problems and suggested improvements.
-- Save JSON reports to `PR_records/` or return them to the calling system.
+- Save JSON reports to `PR-processed/` or return them to the calling system.

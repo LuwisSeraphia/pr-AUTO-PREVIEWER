@@ -6,7 +6,6 @@ import json
 import os
 import random
 import re
-import socket
 import sys
 import time
 from datetime import datetime, timedelta, timezone
@@ -51,11 +50,7 @@ HEADERS = {
 }
 if token:
     HEADERS["Authorization"] = f"token {token}"
-
-CONTEXT_WINDOW = 30  # lines above/below diffs
-FETCH_TIMEOUT = 10   # seconds per file fetch
-_FILE_CACHE = {}
-
+CONTEXT_WINDOW = int(os.getenv("DIFF_CONTEXT_LINES", "20"))
 
 def github_get(path, params=None, quiet_404=False):
     url = f"{BASE_URL}{path}"
@@ -88,123 +83,29 @@ def fetch_paginated(path, per_page=100):
     return items
 
 
-def clean_patch(patch):
-    """Parse a patch into structured hunks with line numbers."""
-    hunks = []
-    current = None
-    new_line_no = None
+def build_context_lines(file_entry, window=CONTEXT_WINDOW):
+    """Fetch up to window lines around the first changed hunk."""
+    url = file_entry.get("raw_url")
+    patch = file_entry.get("patch")
+    if not url or not patch:
+        return []
+
+    try:
+        with urlopen(Request(url, headers=HEADERS)) as resp:
+            file_lines = resp.read().decode("utf-8", errors="replace").splitlines()
+    except (HTTPError, URLError):
+        return []
+
+    starts = []
     for line in patch.splitlines():
         if line.startswith("@@"):
             m = re.search(r"\+(\d+)", line)
-            new_line_no = int(m.group(1)) if m else None
-            current = {"header": line, "changes": []}
-            hunks.append(current)
-            continue
-        if current is None:
-            continue
-        if line.startswith("+"):
-            if new_line_no is not None:
-                current["changes"].append(
-                    {"kind": "add", "line": new_line_no, "content": line[1:]}
-                )
-                new_line_no += 1
-        elif line.startswith("-"):
-            current["changes"].append({"kind": "del", "line": None, "content": line[1:]})
-        else:
-            if new_line_no is not None:
-                current["changes"].append(
-                    {"kind": "ctx", "line": new_line_no, "content": line[1:]}
-                )
-                new_line_no += 1
-    return hunks
-
-
-def compute_line_bounds(hunks, window):
-    """Compute min/max lines needed based on hunks with line numbers."""
-    line_numbers = [c["line"] for h in hunks for c in h["changes"] if c.get("line")]
-    if not line_numbers:
-        return None
-    lo = max(min(line_numbers) - window, 1)
-    hi = max(line_numbers) + window
-    return lo, hi
-
-
-def fetch_file_contents(file_entry, hunks, window=CONTEXT_WINDOW, timeout=FETCH_TIMEOUT):
-    """
-    Fetch partial file contents around needed lines.
-    Returns (lines, missing_reason).
-    """
-    url = file_entry.get("raw_url")
-    if not url:
-        return None, "no_raw_url"
-    if url in _FILE_CACHE:
-        return _FILE_CACHE[url]
-
-    bounds = compute_line_bounds(hunks, window)
-    if bounds is None:
-        return None, "no_line_numbers"
-    start_line, end_line = bounds
-
-    req = Request(url, headers=HEADERS)
-    lines = []
-    try:
-        with urlopen(req, timeout=timeout) as resp:
-            for idx, raw_line in enumerate(resp, start=1):
-                if idx < start_line:
-                    continue
-                if idx > end_line:
-                    break
-                lines.append(raw_line.decode("utf-8", errors="replace").rstrip("\n"))
-    except (socket.timeout, TimeoutError):
-        return None, "network_timeout"
-    except (HTTPError, URLError):
-        return None, "network_error"
-    except Exception:
-        return None, "network_error"
-
-    _FILE_CACHE[url] = (lines, None)
-    return lines, None
-
-
-def enrich_hunks_with_context(hunks, file_lines, missing_reason=None, context_window=CONTEXT_WINDOW):
-    """Attach context and enclosing scope to hunks."""
-    if not hunks:
-        return []
-    for hunk in hunks:
-        line_candidates = [c["line"] for c in hunk["changes"] if c["line"]]
-        anchor = (min(line_candidates) if line_candidates else 1) - 1
-        if file_lines:
-            start = max(anchor - context_window, 0)
-            end = min(anchor + context_window + 1, len(file_lines))
-            hunk["context_before"] = file_lines[start:anchor]
-            hunk["context_after"] = file_lines[anchor:end]
-            hunk["enclosing"] = find_enclosing_scope(file_lines, anchor + 1)
-            hunk["context_missing"] = False
-            hunk["missing_reason"] = None
-        else:
-            hunk["context_before"] = []
-            hunk["context_after"] = []
-            hunk["enclosing"] = None
-            hunk["context_missing"] = True
-            hunk["missing_reason"] = missing_reason or "unavailable"
-    return hunks
-
-
-def find_enclosing_scope(lines, line_no):
-    """Find nearest enclosing def/class name above the line_no (1-based)."""
-    idx = max(line_no - 1, 0)
-    for i in range(idx, -1, -1):
-        stripped = lines[i].lstrip()
-        m_func = re.match(r"(async\s+)?def\s+([\w_]+)", stripped)
-        m_cls = re.match(r"class\s+([\w_]+)", stripped)
-        if m_func:
-            return m_func.group(2)
-        if m_cls:
-            return m_cls.group(1)
-    return None
-
-
-    """Find nearest enclosing def/class name above the line_no (1-based)."""
+            if m:
+                starts.append(int(m.group(1)))
+    anchor = min(starts) if starts else 1
+    lo = max(anchor - 1 - window, 0)
+    hi = min(anchor - 1 + window + 1, len(file_lines))
+    return [f" {text}" for text in file_lines[lo:hi]]
 
 
 def start_of_yesterday_utc():
@@ -281,20 +182,16 @@ def process_pr(pr_info, allow_missing=False):
         patch = file_entry.get("patch")
         if not patch:
             continue
-        hunks = clean_patch(patch)
         legacy_changes = [
             line
             for line in patch.splitlines()
             if line.startswith(("+", "-")) and not line.startswith(("+++", "---"))
         ]
-        file_lines, missing_reason = fetch_file_contents(file_entry, hunks)
-        enriched = enrich_hunks_with_context(hunks, file_lines, missing_reason=missing_reason)
         python_diffs.append(
             {
                 "file": filename,
-                "raw_patch": patch,
                 "changes": legacy_changes,
-                "hunks": enriched,
+                "context": build_context_lines(file_entry),
             }
         )
 
@@ -315,7 +212,7 @@ def process_pr(pr_info, allow_missing=False):
 
 
 def init_last_read_pr():
-    """Initialize LAST_READ_PR lazily from existing PR_records filenames."""
+    """Initialize LAST_READ_PR lazily from existing PR-processed filenames."""
     global LAST_READ_PR
     if LAST_READ_PR is not None:
         return

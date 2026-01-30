@@ -3,21 +3,22 @@
   "github": {
     "_comment": "GitHub repository settings and token environment variable name.",
     "owner": "python-attrs",
-    "repo": "attrs",
-    "token_env": "GITHUB_TOKEN",
-    "user_agent": "python-attrs-pr-scraper"
-  },
+        "repo": "attrs",
+        "token": "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",
+        "token_env": "GITHUB_TOKEN",
+        "user_agent": "python-attrs-pr-scraper"
+    },
   "paths": {
     "_comment": "Project paths; relative values are resolved against project_root.",
     "project_root": ".",
     "dataset_dir": "dataset",
-    "pr_records": "dataset/PR_records",
-    "new_pr": "dataset/newPR"
+    "pr_records": "dataset/PR-processed",
+    "new_pr": "dataset/PR-unprocessed"
   },
   "batch": {
     "_comment": "Batch sizes and pacing for API calls.",
     "initialize_per_page": 20,
-    "initialize_max_records": 50,
+    "initialize_max_records": 200,
     "search_batch_size": 50,
     "search_sleep_seconds": 2
   }
