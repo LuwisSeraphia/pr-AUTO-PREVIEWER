@@ -1,6 +1,7 @@
 import subprocess
 import sys
 from pathlib import Path
+import os
 
 
 def add_project_root(marker="config.py"):
@@ -43,7 +44,9 @@ def latest_pr_number(filenames):
 
 def run_grap_new():
     print(f"\n$ {sys.executable} {GRAP_NEW}")
-    result = subprocess.run([sys.executable, str(GRAP_NEW)], cwd=ROOT)
+    env = os.environ.copy()
+    env.setdefault("DIFF_CONTEXT_LINES", "20")
+    result = subprocess.run([sys.executable, str(GRAP_NEW)], cwd=ROOT, env=env)
     return result.returncode
 
 
@@ -53,10 +56,10 @@ def main():
         latest = latest_pr_number(existing)
         latest_label = str(latest) if latest is not None else sorted(existing)[-1]
         print(
-            f"Existing newPR files detected ({len(existing)}). "
+            f"Existing PR-unprocessed files detected ({len(existing)}). "
             f"Using them for updates; latest sequence: {latest_label}."
         )
-        print(f"Current newPR file count: {len(existing)}")
+        print(f"Current PR-unprocessed file count: {len(existing)}")
         return 0
 
     before = existing
@@ -76,7 +79,7 @@ def main():
     else:
         print("No new PR files generated in this run.")
 
-    print(f"Current newPR file count: {total}")
+    print(f"Current PR-unprocessed file count: {total}")
     return 0
 
 
