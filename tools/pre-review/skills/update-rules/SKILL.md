@@ -18,10 +18,16 @@ Use this skill to keep `rules.md` up to date when new PR JSON records appear in 
 - `reason.commit_messages`
 - `python_diffs` (Python files only; skip non-Python diffs entirely). Each diff provides file path, raw patch, structured hunks with line numbers/kinds, enclosing function/class (if resolvable), and before/after context. If context is missing (`context_missing=True` with `missing_reason` such as `network_timeout`), treat conclusions as low confidence and note the gap.
 
+## Rule generation requirements (align with initialize)
+- Keep rules mid-level, project-oriented, and conceptual: avoid library/framework/runtime/version names, concrete identifiers, and string literals; derive guidance from behavior and scope, not isolated lines or function-level specifics.
+- Enforce the abstraction gate: hard-reject candidates tied to a single function/class/implementation path or unique API shape; require cross-module or multi-scenario applicability and contextual support from call flows, boundaries, defaults, validation order, and error semantics.
+- Use contextual anchors from surrounding code (interfaces, data/default propagation, validation-before-mutation, compatibility/fallbacks, docs/version markers, and testing intent) as evidence; never rely on single-line triggers.
+- Draft rules only when supported by aggregated patterns; keep them single-purpose and formatted per `rule_template.md`, with scenario + required/recommended behavior + engineering rationale, and severity set to MUST/SHOULD/MAY without weakening existing levels.
+
 ## Workflow
 0) Refresh PR inputs: first check `dataset/PR-unprocessed/` for existing `*.json`. If present, use them directly (runner now reports the latest sequence id) and skip fetching. If the folder is empty, run `python tools/pre-review/skills/update-rules/runner.py` (calls `tools/pre-review/skills/update-rules/scripts/grapNew.py`) to fetch the latest Python PRs; it auto-backfills when none are new and prints when nothing needs updating.
 1) Collect files: list all JSON files in `dataset/PR-unprocessed/` after the fetch. If none exist, stop—there is nothing to update.
-2) Process files in explicit batches (recommended 10 files per batch to mirror initialize); for each batch:
+2) Process files in explicit batches (10 files per batch, max 5 batches per invocation—stop cleanly at the limit and leave remaining files for the next run) to mirror initialize; for each batch:
    - Load the three allowed fields above, using the provided context (enclosing scope + before/after snippets) when assessing rule alignment.
    - Derive signals from Python diffs only; ignore non-Python changes.
    - Determine mapping:

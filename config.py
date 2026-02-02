@@ -19,7 +19,7 @@ DEFAULT_CONFIG = {
     },
     "batch": {
         "initialize_per_page": 20,
-        "initialize_max_records": 50,
+        "grab_max_records": 50,
         "search_batch_size": 50,
         "search_sleep_seconds": 2,
     },

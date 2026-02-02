@@ -18,7 +18,7 @@
   "batch": {
     "_comment": "Batch sizes and pacing for API calls.",
     "initialize_per_page": 20,
-    "initialize_max_records": 200,
+    "grab_max_records": 200,
     "search_batch_size": 50,
     "search_sleep_seconds": 2
   }
