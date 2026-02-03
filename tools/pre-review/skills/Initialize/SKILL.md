@@ -1,10 +1,10 @@
 ---
 name: initialize
-description: Rule-generation skill that reads PR records and incrementally produces project-level, mid-tier coding rules.
+description: Runs the full grab-pr plus form-rules pipeline to bootstrap the project’s mid-level ruleset from scratch. Trigger whenever a request asks to bootstrap/initialize rules, start from past PRs end-to-end, or otherwise derive guidance in one go.
 ---
 
 ## Overview
-This skill reads existing `dataset/PR-unprocessed/*.json` files, extracts signals from Python diffs and surrounding context, and incrementally generates tiered coding rules in English.  
+This skill drives the full bootstrap loop automatically: it invokes the grab-pr fetcher when fresh PR data is needed, feeds the resulting JSON batches into the form-rules pipeline, and writes both `rules.md` and the per-batch dialog logs. Any fuzzy request like “bootstrap/initialize project rules,” “derive guidance from earlier PRs,” or “start from scratch with rules” should route here, since it guarantees the grab-pr → form-rules chain runs without further prompts. Once PR records exist locally, it continues directly with form-rules to extract signals from Python diffs and surrounding context, incrementally generating tiered coding rules in English.  
 Generated rules are **project-oriented and mid-level**: they avoid project/tool/version-specific details (no library names, runtime versions, framework labels), avoid concrete identifiers or string literals, and stay conceptual. Rules must be derived from contextual behavior and scope rather than single-line patterns, pass a read → abstract → qualify pipeline, and reject any function-level or implementation-specific notes that cannot generalize across modules or scenarios.
 
 ## Example

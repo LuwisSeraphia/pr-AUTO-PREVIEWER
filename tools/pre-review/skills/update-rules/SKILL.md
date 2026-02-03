@@ -1,11 +1,11 @@
 ---
 name: update-rules
-description: Reads PR diffs and iteratively updates the existing ruleset, producing batch-level update logs.
+description: Keeps `rules.md` current by fetching incremental PRs via grab-pr and piping them through form-rules to fold new evidence into the English ruleset. Trigger whenever a request mentions refreshing, regenerating, or updating rules/best practices with recent PRs.
 ---
 
 # Update Rules Skill
 
-Use this skill to keep `rules.md` up to date when new PR JSON records appear in `dataset/PR-unprocessed/`. Records now contain structured hunks with line numbers, enclosing function/class, and before/after context; rules must be evaluated on this context rather than isolated lines. Only the English ruleset is updated. The runner now drives a non-interactive `grapNew` fetch step before reviewing PR records.
+Use this skill to keep `rules.md` up to date when new PR JSON records appear in `dataset/PR-unprocessed/`. Any instruction like “refresh the rules,” “regenerate best practices,” or “update guidance with recent PRs” should map here automatically. It is fully integrated: the runner first invokes the grab-pr fetcher (non-interactively) to ensure PR inputs are fresh, then hands those JSON batches to the same form-rules pipeline used during initialization. Records now contain structured hunks with line numbers, enclosing function/class, and before/after context; rules must be evaluated on this context rather than isolated lines. Only the English ruleset is updated.
 
 ## Inputs
 

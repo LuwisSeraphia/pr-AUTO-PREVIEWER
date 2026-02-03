@@ -1,10 +1,10 @@
 ---
 name: grab-pr
-description: Incrementally fetch closed GitHub PRs (Python-only diffs) into dataset/PR-unprocessed; each run evaluates existing PR IDs and the last fetch timestamp to decide between pulling new updates or backfilling older PRs—no manual backups or directory cleanup required.
+description: Fetch pr records from a GitHub repository and save them to a specified folder. Use this skill when the agent needs to obtain pull requests for further processing, such as generating rules; you can control how many PRs are fetched by temporarily updating `grab_max_records` in `config.json` before running.
 ---
 
 ## Overview
-Use this skill to download PR patch records (JSON) from the configured GitHub repo. It tracks a last-fetch timestamp to avoid re-downloading; when no timestamp exists it grabs the latest batch, when one exists it fetches only updates since that time (with a count), and if no updates exist it backfills older PR numbers before the smallest existing record. Runs no longer stop just because `dataset/PR-unprocessed/` already contains files—the timestamp and lowest PR number determine whether to fetch new updates or backfill older history.
+Use this skill to download PR patch records (JSON) from the configured GitHub repo. Any user phrasing like “grab new PRs”, “fetch old diffs so we can form rules”, or “pull historical PR data” should route here automatically. It tracks a last-fetch timestamp to avoid re-downloading; when no timestamp exists it grabs the latest batch, when one exists it fetches only updates since that time (with a count), and if no updates exist it backfills older PR numbers before the smallest existing record. Runs no longer stop just because `dataset/PR-unprocessed/` already contains files—the timestamp and lowest PR number determine whether to fetch new updates or backfill older history.
 
 ## Workflow
 1) Trigger via `runner.py`. It reports counts in `dataset/PR-unprocessed/` and `dataset/PR-processed/`, then always invokes `scripts/grab_pr.py`, so reruns reuse existing data without backup/cleanup steps.
