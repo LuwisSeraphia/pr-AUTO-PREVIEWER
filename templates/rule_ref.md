@@ -1,5 +1,373 @@
 # Rule Reference Sources
 - Refactoring.Guru Code Smells (design-level maintainability heuristics) - link: https://refactoring.guru/refactoring/smells
+  - Intro text: "-- What? How can code "smell"?? -- Well it doesn't have a nose... but it definitely can stink!"
+  - Bloaters
+    - "Bloaters are code, methods and classes that have increased to such gargantuan proportions that they are hard to work with. Usually these smells do not crop up right away, rather they accumulate over time as the program evolves (and especially when nobody makes an effort to eradicate them)."
+    - Long Method - link: https://refactoring.guru/smells/long-method
+      - Signs and Symptoms:
+        - A method contains too many lines of code. Generally, any method longer than ten lines should make you start asking questions.
+      - Reasons for the Problem:
+        - Like the Hotel California, something is always being added to a method but nothing is ever taken out. Since it's easier to write code than to read it, this "smell" remains unnoticed until the method turns into an ugly, oversized beast.
+        - Mentally, it's often harder to create a new method than to add to an existing one: "But it's just two lines, there's no use in creating a whole method just for that..." Which means that another line is added and then yet another, giving birth to a tangle of spaghetti code.
+      - Treatment:
+        - As a rule of thumb, if you feel the need to comment on something inside a method, you should take this code and put it in a new method. Even a single line can and should be split off into a separate method, if it requires explanations. And if the method has a descriptive name, nobody will need to look at the code to see what it does.
+        - To reduce the length of a method body, use Extract Method.
+        - If local variables and parameters interfere with extracting a method, use Replace Temp with Query, Introduce Parameter Object or Preserve Whole Object.
+        - If none of the previous recipes help, try moving the entire method to a separate object via Replace Method with Method Object.
+        - Conditional operators and loops are a good clue that code can be moved to a separate method. For conditionals, use Decompose Conditional. If loops are in the way, try Extract Method.
+      - Payoff:
+        - Among all types of object-oriented code, classes with short methods live longest. The longer a method or function is, the harder it becomes to understand and maintain it.
+        - In addition, long methods offer the perfect hiding place for unwanted duplicate code.
+      <refed by:group 3 1310.json => <high> [MUST] Equality builders compare attributes independently: Emit chained per-attribute comparisons (or eq_key invocations) rather than bloated tuple packing so equality stays fast and readable.>
+      - Performance:
+        - Does an increase in the number of methods hurt performance, as many people claim? In almost all cases the impact is so negligible that it's not even worth worrying about.
+        - Plus, now that you have clear and understandable code, you're more likely to find truly effective methods for restructuring code and getting real performance gains if the need ever arises.
+    - Large Class - link: https://refactoring.guru/smells/large-class
+      - Signs and Symptoms:
+        - A class contains many fields/methods/lines of code.
+      - Reasons for the Problem:
+        - Classes usually start small. But over time, they get bloated as the program grows.
+        - As is the case with long methods as well, programmers usually find it mentally less taxing to place a new feature in an existing class than to create a new class for the feature.
+      - Treatment:
+        - When a class is wearing too many (functional) hats, think about splitting it up:
+        - Extract Class helps if part of the behavior of the large class can be spun off into a separate component.
+        - Extract Subclass helps if part of the behavior of the large class can be implemented in different ways or is used in rare cases.
+        - Extract Interface helps if it's necessary to have a list of the operations and behaviors that the client can use.
+        - If a large class is responsible for the graphical interface, you may try to move some of its data and behavior to a separate domain object. In doing so, it may be necessary to store copies of some data in two places and keep the data consistent. Duplicate Observed Data offers a way to do this.
+      - Payoff:
+        - Refactoring of these classes spares developers from needing to remember a large number of attributes for a class.
+        - In many cases, splitting large classes into parts avoids duplication of code and functionality.
+    - Primitive Obsession - link: https://refactoring.guru/smells/primitive-obsession
+      - Signs and Symptoms:
+        - Use of primitives instead of small objects for simple tasks (such as currency, ranges, special strings for phone numbers, etc.)
+        - Use of constants for coding information (such as a constant USER_ADMIN_ROLE = 1 for referring to users with administrator rights.)
+        - Use of string constants as field names for use in data arrays.
+      - Reasons for the Problem:
+        - Like most other smells, primitive obsessions are born in moments of weakness. "Just a field for storing some data!" the programmer said. Creating a primitive field is so much easier than making a whole new class, right? And so it was done. Then another field was needed and added in the same way. Lo and behold, the class became huge and unwieldy.
+        - Primitives are often used to "simulate" types. So instead of a separate data type, you have a set of numbers or strings that form the list of allowable values for some entity. Easy-to-understand names are then given to these specific numbers and strings via constants, which is why they're spread wide and far.
+        - Another example of poor primitive use is field simulation. The class contains a large array of diverse data and string constants (which are specified in the class) are used as array indices for getting this data.
+      - Treatment:
+        - If you have a large variety of primitive fields, it may be possible to logically group some of them into their own class. Even better, move the behavior associated with this data into the class too. For this task, try Replace Data Value with Object.
+        - If the values of primitive fields are used in method parameters, go with Introduce Parameter Object or Preserve Whole Object.
+        - When complicated data is coded in variables, use Replace Type Code with Class, Replace Type Code with Subclasses or Replace Type Code with State/Strategy.
+        - If there are arrays among the variables, use Replace Array with Object.
+      - Payoff:
+        - Code becomes more flexible thanks to use of objects instead of primitives.
+        - Better understandability and organization of code. Operations on particular data are in the same place, instead of being scattered. No more guessing about the reason for all these strange constants and why they're in an array.
+        - Easier finding of duplicate code.
+      <refed by:group 3 1358.json => <high> [MUST] Publish type-safe sentinel descriptors: Supply dedicated Literal aliases for sentinel objects instead of forcing consumers to treat them as primitives, addressing primitive obsession.>
+      <refed by:group 3 1374.json => <high> [MUST] Use explicit sentinel checks when wrapping converters: Depending on truthiness to detect the absence of a converter is a form of primitive obsession; compare to None directly.>
+      <refed by:group 3 1410.json => <high> [SHOULD] Provide context-rich error messages instead of anonymous primitives; naming the conflicting attribute prevents primitive obsession around debugging.>
+    - Long Parameter List - link: https://refactoring.guru/smells/long-parameter-list
+      - Signs and Symptoms:
+        - More than three or four parameters for a method.
+      - Reasons for the Problem:
+        - A long list of parameters might happen after several types of algorithms are merged in a single method. A long list may have been created to control which algorithm will be run and how.
+        - Long parameter lists may also be the byproduct of efforts to make classes more independent of each other. For example, the code for creating specific objects needed in a method was moved from the method to the code for calling the method, but the created objects are passed to the method as parameters. Thus the original class no longer knows about the relationships between objects, and dependency has decreased. But if several of these objects are created, each of them will require its own parameter, which means a longer parameter list.
+        - It's hard to understand such lists, which become contradictory and hard to use as they grow longer. Instead of a long list of parameters, a method can use the data of its own object. If the current object doesn't contain all necessary data, another object (which will get the necessary data) can be passed as a method parameter.
+      - Treatment:
+        - Check what values are passed to parameters. If some of the arguments are just results of method calls of another object, use Replace Parameter with Method Call. This object can be placed in the field of its own class or passed as a method parameter.
+        - Instead of passing a group of data received from another object as parameters, pass the object itself to the method, by using Preserve Whole Object.
+        - But if these parameters are coming from different sources, you can pass them as a single parameter object via Introduce Parameter Object.
+      - Payoff:
+        - More readable, shorter code.
+        - Refactoring may reveal previously unnoticed duplicate code.
+      - When to Ignore:
+        - Don't get rid of parameters if doing so would cause unwanted dependency between classes.
+    - Data Clumps - link: https://refactoring.guru/smells/data-clumps
+      - Signs and Symptoms:
+        - Sometimes different parts of the code contain identical groups of variables (such as parameters for connecting to a database). These clumps should be turned into their own classes.
+      - Reasons for the Problem:
+        - Often these data groups are due to poor program structure or "copypasta programming".
+        - If you want to make sure whether or not some data is a data clump, just delete one of the data values and see whether the other values still make sense. If this isn't the case, this is a good sign that this group of variables should be combined into an object.
+      - Treatment:
+        - If repeating data comprises the fields of a class, use Extract Class to move the fields to their own class.
+        - If the same data clumps are passed in the parameters of methods, use Introduce Parameter Object to set them off as a class.
+        - If some of the data is passed to other methods, think about passing the entire data object to the method instead of just individual fields. Preserve Whole Object will help with this.
+        - Look at the code used by these fields. It may be a good idea to move this code to a data class.
+      - Payoff:
+        - Improves understanding and organization of code. Operations on particular data are now gathered in a single place, instead of haphazardly throughout the code.
+        - Reduces code size.
+      - When to Ignore:
+        - Passing an entire object in the parameters of a method, instead of passing just its values (primitive types), may create an undesirable dependency between the two classes.
+  - Object-Orientation Abusers
+    - "All these smells are incomplete or incorrect application of object-oriented programming principles."
+    - Alternative Classes with Different Interfaces - link: https://refactoring.guru/smells/alternative-classes-with-different-interfaces
+      - Signs and Symptoms:
+        - Two classes perform identical functions but have different method names.
+      - Reasons for the Problem:
+        - The programmer who created one of the classes probably didn't know that a functionally equivalent class already existed.
+      - Treatment:
+        - Try to put the interface of classes in terms of a common denominator:
+        - Rename Method s to make them identical in all alternative classes.
+        - Move Method, Add Parameter and Parameterize Method to make the signature and implementation of methods the same.
+        - If only part of the functionality of the classes is duplicated, try using Extract Superclass. In this case, the existing classes will become subclasses.
+        - After you have determined which treatment method to use and implemented it, you may be able to delete one of the classes.
+      - Payoff:
+        - You get rid of unnecessary duplicated code, making the resulting code less bulky.
+        - Code becomes more readable and understandable (you no longer have to guess the reason for creation of a second class performing the exact same functions as the first one).
+      - When to Ignore:
+        - Sometimes merging classes is impossible or so difficult as to be pointless. One example is when the alternative classes are in different libraries that each have their own version of the class.
+    - Refused Bequest - link: https://refactoring.guru/smells/refused-bequest
+      - Signs and Symptoms:
+        - If a subclass uses only some of the methods and properties inherited from its parents, the hierarchy is off-kilter. The unneeded methods may simply go unused or be redefined and give off exceptions.
+      - Reasons for the Problem:
+        - Someone was motivated to create inheritance between classes only by the desire to reuse the code in a superclass. But the superclass and subclass are completely different.
+      - Treatment:
+        - If inheritance makes no sense and the subclass really does have nothing in common with the superclass, eliminate inheritance in favor of Replace Inheritance with Delegation.
+        - If inheritance is appropriate, get rid of unneeded fields and methods in the subclass. Extract all fields and methods needed by the subclass from the parent class, put them in a new superclass, and set both classes to inherit from it (Extract Superclass).
+      - Payoff:
+        - Improves code clarity and organization. You will no longer have to wonder why the Dog class is inherited from the Chair class (even though they both have 4 legs).
+      <refed by:group 3 1365.json => <high> [MUST] Frozen exceptions must not refuse BaseException’s special state: Permit cause/context/suppress_context/notes to mutate even under frozen enforcement so subclasses don’t “refuse the bequest.”>
+    - Switch Statements - link: https://refactoring.guru/smells/switch-statements
+      - Signs and Symptoms:
+        - You have a complex switch operator or sequence of if statements.
+      - Reasons for the Problem:
+        - Relatively rare use of switch and case operators is one of the hallmarks of object-oriented code. Often code for a single switch can be scattered in different places in the program. When a new condition is added, you have to find all the switch code and modify it.
+        - As a rule of thumb, when you see switch you should think of polymorphism.
+      - Treatment:
+        - To isolate switch and put it in the right class, you may need Extract Method and then Move Method.
+        - If a switch is based on type code, such as when the program's runtime mode is switched, use Replace Type Code with Subclasses or Replace Type Code with State/Strategy.
+        - After specifying the inheritance structure, use Replace Conditional with Polymorphism.
+        - If there aren't too many conditions in the operator and they all call same method with different parameters, polymorphism will be superfluous. If this case, you can break that method into multiple smaller methods with Replace Parameter with Explicit Methods and change the switch accordingly.
+        - If one of the conditional options is null, use Introduce Null Object.
+      - Payoff:
+        - Improved code organization.
+      - When to Ignore:
+        - When a switch operator performs simple actions, there's no reason to make code changes.
+        - Often switch operators are used by factory design patterns (Factory Method or Abstract Factory) to select a created class.
+    - Temporary Field - link: https://refactoring.guru/smells/temporary-field
+      - Signs and Symptoms:
+        - Temporary fields get their values (and thus are needed by objects) only under certain circumstances. Outside of these circumstances, they're empty.
+      - Reasons for the Problem:
+        - Oftentimes, temporary fields are created for use in an algorithm that requires a large amount of inputs. So instead of creating a large number of parameters in the method, the programmer decides to create fields for this data in the class. These fields are used only in the algorithm and go unused the rest of the time.
+        - This kind of code is tough to understand. You expect to see data in object fields but for some reason they're almost always empty.
+      - Treatment:
+        - Temporary fields and all code operating on them can be put in a separate class via Extract Class. In other words, you're creating a method object, achieving the same result as if you would perform Replace Method with Method Object.
+        - Introduce Null Object and integrate it in place of the conditional code which was used to check the temporary field values for existence.
+      - Payoff:
+        - Better code clarity and organization.
+  - Change Preventers
+    - "These smells mean that if you need to change something in one place in your code, you have to make many changes in other places too. Program development becomes much more complicated and expensive as a result."
+    - Divergent Change - link: https://refactoring.guru/smells/divergent-change
+      - Signs and Symptoms:
+        - You find yourself having to change many unrelated methods when you make changes to a class. For example, when adding a new product type you have to change the methods for finding, displaying, and ordering products.
+      - Reasons for the Problem:
+        - Often these divergent modifications are due to poor program structure or "copypasta programming".
+      - Treatment:
+        - Split up the behavior of the class via Extract Class.
+        - If different classes have the same behavior, you may want to combine the classes through inheritance (Extract Superclass and Extract Subclass).
+      - Payoff:
+        - Improves code organization.
+        - Reduces code duplication.
+        - Simplifies support.
+      <refed by:group 3 1349.json => <high> [SHOULD] Retire obsolete compat layers once baselines rise: Remove unused version flags and always call type-hint resolvers with extras to prevent divergent handling of annotations.>
+      <refed by:group 3 1406.json => <high> [MUST] Normalize unicode identifiers up front so callers don’t face divergent change across code paths that manually normalize names.>
+    - Parallel Inheritance Hierarchies - link: https://refactoring.guru/smells/parallel-inheritance-hierarchies
+      - Signs and Symptoms:
+        - Whenever you create a subclass for a class, you find yourself needing to create a subclass for another class.
+      - Reasons for the Problem:
+        - All was well as long as the hierarchy stayed small. But with new classes being added, making changes has become harder and harder.
+      - Treatment:
+        - You may de-duplicate parallel class hierarchies in two steps. First, make instances of one hierarchy refer to instances of another hierarchy. Then, remove the hierarchy in the referred class, by using Move Method and Move Field.
+      - Payoff:
+        - Reduces code duplication.
+        - Can improve organization of code.
+      - When to Ignore:
+        - Sometimes having parallel class hierarchies is just a way to avoid even bigger mess with program architecture. If you find that your attempts to de-duplicate hierarchies produce even uglier code, just step out, revert all of your changes and get used to that code.
+    - Shotgun Surgery - link: https://refactoring.guru/smells/shotgun-surgery
+      - Signs and Symptoms:
+        - Making any modifications requires that you make many small changes to many different classes.
+      - Reasons for the Problem:
+        - A single responsibility has been split up among a large number of classes. This can happen after overzealous application of Divergent Change.
+      - Treatment:
+        - Use Move Method and Move Field to move existing class behaviors into a single class. If there's no class appropriate for this, create a new one.
+        - If moving code to the same class leaves the original classes almost empty, try to get rid of these now-redundant classes via Inline Class.
+      - Payoff:
+        - Better organization.
+        - Less code duplication.
+        - Easier maintenance.
+      <refed by:group 3 1299.json => <high> [SHOULD] Benchmark-critical suites use dedicated markers: Centralize performance instrumentation via suite-level benchmark tags to avoid editing dozens of tests when enabling Codspeed.>
+  - Dispensables
+    - "A dispensable is something pointless and unneeded whose absence would make the code cleaner, more efficient and easier to understand."
+    - Comments - link: https://refactoring.guru/smells/comments
+      - Signs and Symptoms:
+        - A method is filled with explanatory comments.
+      - Reasons for the Problem:
+        - Comments are usually created with the best of intentions, when the author realizes that his or her code isn't intuitive or obvious. In such cases, comments are like a deodorant masking the smell of fishy code that could be improved.
+        - If you feel that a code fragment can't be understood without comments, try to change the code structure in a way that makes comments unnecessary.
+      - Treatment:
+        - If a comment is intended to explain a complex expression, the expression should be split into understandable subexpressions using Extract Variable.
+        - If a comment explains a section of code, this section can be turned into a separate method via Extract Method. The name of the new method can be taken from the comment text itself, most likely.
+        - If a method has already been extracted, but comments are still necessary to explain what the method does, give the method a self-explanatory name. Use Rename Method for this.
+        - If you need to assert rules about a state that's necessary for the system to work, use Introduce Assertion.
+      - Payoff:
+        - Code becomes more intuitive and obvious.
+     - When to Ignore:
+        - Comments can sometimes be useful:
+        - When explaining why something is being implemented in a particular way.
+        - When explaining complex algorithms (when all other methods for simplifying the algorithm have been tried and come up short).
+      <refed by:group 3 1366.json => <high> [SHOULD] Keep documentation text purposeful: Avoid inserting nonsense into module docstrings and maintain clean import grouping to prevent confusing commentary, per the “Comments” smell guidance.>
+      <refed by:group 3 1423.json => <high> [SHOULD] Keep documentation text accurate; mismatched operator names in validator descriptions are exactly the kind of misleading comment smell to avoid.>
+    - Duplicate Code - link: https://refactoring.guru/smells/duplicate-code
+      - Signs and Symptoms:
+        - Two code fragments look almost identical.
+      - Reasons for the Problem:
+        - Duplication usually occurs when multiple programmers are working on different parts of the same program at the same time. Since they're working on different tasks, they may be unaware their colleague has already written similar code that could be repurposed for their own needs.
+        - There's also more subtle duplication, when specific parts of code look different but actually perform the same job. This kind of duplication can be hard to find and fix.
+        - Sometimes duplication is purposeful. When rushing to meet deadlines and the existing code is "almost right" for the job, novice programmers may not be able to resist the temptation of copying and pasting the relevant code. And in some cases, the programmer is simply too lazy to de-clutter.
+      - Treatment:
+        - If the same code is found in two or more methods in the same class: use Extract Method and place calls for the new method in both places.
+        - If the same code is found in two subclasses of the same level: Use Extract Method for both classes, followed by Pull Up Field for the fields used in the method that you're pulling up. If the duplicate code is inside a constructor, use Pull Up Constructor Body. If the duplicate code is similar but not completely identical, use Form Template Method. If two methods do the same thing but use different algorithms, select the best algorithm and apply Substitute Algorithm.
+        - Use Extract Method for both classes, followed by Pull Up Field for the fields used in the method that you're pulling up.
+        - If the duplicate code is inside a constructor, use Pull Up Constructor Body.
+        - If the duplicate code is similar but not completely identical, use Form Template Method.
+        - If two methods do the same thing but use different algorithms, select the best algorithm and apply Substitute Algorithm.
+        - If duplicate code is found in two different classes: If the classes aren't part of a hierarchy, use Extract Superclass in order to create a single superclass for these classes that maintains all the previous functionality. If it's difficult or impossible to create a superclass, use Extract Class in one class and use the new component in the other.
+        - If the classes aren't part of a hierarchy, use Extract Superclass in order to create a single superclass for these classes that maintains all the previous functionality.
+        - If it's difficult or impossible to create a superclass, use Extract Class in one class and use the new component in the other.
+        - If a large number of conditional expressions are present and perform the same code (differing only in their conditions), merge these operators into a single condition using Consolidate Conditional Expression and use Extract Method to place the condition in a separate method with an easy-to-understand name.
+        - If the same code is performed in all branches of a conditional expression: place the identical code outside of the condition tree by using Consolidate Duplicate Conditional Fragments.
+      - Payoff:
+        - Merging duplicate code simplifies the structure of your code and makes it shorter.
+        - Simplification + shortness = code that's easier to simplify and cheaper to support.
+      - When to Ignore:
+        - In very rare cases, merging two identical fragments of code can make the code less intuitive and obvious.
+    - Data Class - link: https://refactoring.guru/smells/data-class
+      - Signs and Symptoms:
+        - A data class refers to a class that contains only fields and crude methods for accessing them (getters and setters). These are simply containers for data used by other classes. These classes don't contain any additional functionality and can't independently operate on the data that they own.
+      - Reasons for the Problem:
+        - It's a normal thing when a newly created class contains only a few public fields (and maybe even a handful of getters/setters). But the true power of objects is that they can contain behavior types or operations on their data.
+      - Treatment:
+        - If a class contains public fields, use Encapsulate Field to hide them from direct access and require that access be performed via getters and setters only.
+        - Use Encapsulate Collection for data stored in collections (such as arrays).
+        - Review the client code that uses the class. In it, you may find functionality that would be better located in the data class itself. If this is the case, use Move Method and Extract Method to migrate this functionality to the data class.
+        - After the class has been filled with well thought-out methods, you may want to get rid of old methods for data access that give overly broad access to the class data. For this, Remove Setting Method and Hide Method may be helpful.
+      - Payoff:
+        - Improves understanding and organization of code. Operations on particular data are now gathered in a single place, instead of haphazardly throughout the code.
+        - Helps you to spot duplication of client code.
+    - Dead Code - link: https://refactoring.guru/smells/dead-code
+      - Signs and Symptoms:
+        - A variable, parameter, field, method or class is no longer used (usually because it's obsolete).
+      - Reasons for the Problem:
+        - When requirements for the software have changed or corrections have been made, nobody had time to clean up the old code.
+        - Such code could also be found in complex conditionals, when one of the branches becomes unreachable (due to error or other circumstances).
+      - Treatment:
+        - The quickest way to find dead code is to use a good IDE.
+        - Delete unused code and unneeded files.
+        - In the case of an unnecessary class, Inline Class or Collapse Hierarchy can be applied if a subclass or superclass is used.
+        - To remove unneeded parameters, use Remove Parameter.
+      - Payoff:
+        - Reduced code size.
+        - Simpler support.
+      <refed by:group 3 1415.json => <high> [SHOULD] Delete temporary xfails once they’re no longer needed to avoid creating dead code paths in the test suite.>
+    - Lazy Class - link: https://refactoring.guru/smells/lazy-class
+      - Signs and Symptoms:
+        - Understanding and maintaining classes always costs time and money. So if a class doesn't do enough to earn your attention, it should be deleted.
+      - Reasons for the Problem:
+        - Perhaps a class was designed to be fully functional but after some of the refactoring it has become ridiculously small.
+        - Or perhaps it was designed to support future development work that never got done.
+      - Treatment:
+        - Components that are near-useless should be given the Inline Class treatment.
+        - For subclasses with few functions, try Collapse Hierarchy.
+      - Payoff:
+        - Reduced code size.
+        - Easier maintenance.
+      - When to Ignore:
+        - Sometimes a Lazy Class is created in order to delineate intentions for future development, In this case, try to maintain a balance between clarity and simplicity in your code.
+    - Speculative Generality - link: https://refactoring.guru/smells/speculative-generality
+      - Signs and Symptoms:
+        - There's an unused class, method, field or parameter.
+      - Reasons for the Problem:
+        - Sometimes code is created "just in case" to support anticipated future features that never get implemented. As a result, code becomes hard to understand and support.
+      - Treatment:
+        - For removing unused abstract classes, try Collapse Hierarchy.
+        - Unnecessary delegation of functionality to another class can be eliminated via Inline Class.
+        - Unused methods? Use Inline Method to get rid of them.
+        - Methods with unused parameters should be given a look with the help of Remove Parameter.
+        - Unused fields can be simply deleted.
+      - Payoff:
+        - Slimmer code.
+        - Easier support.
+      <refed by:group 3 1355.json => <high> [SHOULD] Eliminate documentation for dead parameters promptly: Avoid confusing readers with options that no longer exist; leaving them behind is speculative generality.>
+      <refed by:group 3 1373.json => <high> [SHOULD] Replace commented examples with executable ones: Keeping converter demos as real code avoids speculative generality and ensures typing coverage stays current.>
+      <refed by:group 3 1398.json => <high> [SHOULD] Remove stale xfails once dependency support ships; continuing to expect failure is speculative generality that hides regressions.>
+      - When to Ignore:
+        - If you're working on a framework, it's eminently reasonable to create functionality not used in the framework itself, as long as the functionality is needed by the frameworks's users.
+        - Before deleting elements, make sure that they aren't used in unit tests. This happens if tests need a way to get certain internal information from a class or perform special testing-related actions.
+  - Couplers
+    - "All the smells in this group contribute to excessive coupling between classes or show what happens if coupling is replaced by excessive delegation."
+    - Feature Envy - link: https://refactoring.guru/smells/feature-envy
+      - Signs and Symptoms:
+        - A method accesses the data of another object more than its own data.
+      - Reasons for the Problem:
+        - This smell may occur after fields are moved to a data class. If this is the case, you may want to move the operations on data to this class as well.
+      - Treatment:
+        - As a basic rule, if things change at the same time, you should keep them in the same place. Usually data and functions that use this data are changed together (although exceptions are possible).
+        - If a method clearly should be moved to another place, use Move Method.
+        - If only part of a method accesses the data of another object, use Extract Method to move the part in question.
+        - If a method uses functions from several other classes, first determine which class contains most of the data used. Then place the method in this class along with the other data. Alternatively, use Extract Method to split the method into several parts that can be placed in different places in different classes.
+      - Payoff:
+        - Less code duplication (if the data handling code is put in a central place).
+        - Better code organization (methods for handling data are next to the actual data).
+      - When to Ignore:
+        - Sometimes behavior is purposefully kept separate from the class that holds the data. The usual advantage of this is the ability to dynamically change the behavior (see Strategy, Visitor and other patterns).
+    - Inappropriate Intimacy - link: https://refactoring.guru/smells/inappropriate-intimacy
+      - Signs and Symptoms:
+        - One class uses the internal fields and methods of another class.
+      - Reasons for the Problem:
+        - Keep a close eye on classes that spend too much time together. Good classes should know as little about each other as possible. Such classes are easier to maintain and reuse.
+      - Treatment:
+        - The simplest solution is to use Move Method and Move Field to move parts of one class to the class in which those parts are used. But this works only if the first class truly doesn't need these parts.
+        - Another solution is to use Extract Class and Hide Delegate on the class to make the code relations "official".
+        - If the classes are mutually interdependent, you should use Change Bidirectional Association to Unidirectional.
+        - If this "intimacy" is between a subclass and the superclass, consider Replace Delegation with Inheritance.
+      - Payoff:
+        - Improves code organization.
+        - Simplifies support and code reuse.
+    - Incomplete Library Class - link: https://refactoring.guru/smells/incomplete-library-class
+      - Signs and Symptoms:
+        - Sooner or later, libraries stop meeting user needs. The only solution to the problem--changing the library--is often impossible since the library is read-only.
+      - Reasons for the Problem:
+        - The author of the library hasn't provided the features you need or has refused to implement them.
+      - Treatment:
+        - To introduce a few methods to a library class, use Introduce Foreign Method.
+        - For big changes in a class library, use Introduce Local Extension.
+      - Payoff:
+        - Reduces code duplication (instead of creating your own library from scratch, you can still piggy-back off an existing one).
+      <refed by:group 3 1372.json => <high> [MUST] Extend optional converters like a proper library hook: Treat Converter instances as first-class inputs so optional wrappers behave as complete extensions rather than incomplete library classes.>
+      - When to Ignore:
+        - Extending a library can generate additional work if the changes to the library involve changes in code.
+    - Message Chains - link: https://refactoring.guru/smells/message-chains
+      - Signs and Symptoms:
+        - In code you see a series of calls resembling $a->b()->c()->d()
+      - Reasons for the Problem:
+        - A message chain occurs when a client requests another object, that object requests yet another one, and so on. These chains mean that the client is dependent on navigation along the class structure. Any changes in these relationships require modifying the client.
+      - Treatment:
+        - To delete a message chain, use Hide Delegate.
+        - Sometimes it's better to think of why the end object is being used. Perhaps it would make sense to use Extract Method for this functionality and move it to the beginning of the chain, by using Move Method.
+      - Payoff:
+        - Reduces dependencies between classes of a chain.
+        - Reduces the amount of bloated code.
+      - When to Ignore:
+        - Overly aggressive delegate hiding can cause code in which it's hard to see where the functionality is actually occurring. Which is another way of saying, avoid the Middle Man smell as well.
+    - Middle Man - link: https://refactoring.guru/smells/middle-man
+      - Signs and Symptoms:
+        - If a class performs only one action, delegating work to another class, why does it exist at all?
+      - Reasons for the Problem:
+        - This smell can be the result of overzealous elimination of Message Chains.
+        - In other cases, it can be the result of the useful work of a class being gradually moved to other classes. The class remains as an empty shell that doesn't do anything other than delegate.
+      - Treatment:
+        - If most of a method's classes delegate to another class, Remove Middle Man is in order.
+      - Payoff:
+        - Less bulky code.
+      - When to Ignore:
+        - Don't delete middle man that have been created for a reason:
+        - A middle man may have been added to avoid interclass dependencies.
+        - Some design patterns create middle man on purpose (such as Proxy or Decorator).
 - Martin Fowler Code Smell Catalogue (systemic design pitfalls and refactoring cues) - link: https://martinfowler.com/bliki/CodeSmell.html
-- SEI CERT Python Coding Standard (robustness and safety guidance beyond syntax) - link: https://wiki.sei.cmu.edu/confluence/display/python
-
+  - "A code smell is a surface indication that usually corresponds to a deeper problem in the system. The term was first coined by Kent Beck while helping me with my Refactoring book."
+  - "The quick definition above contains a couple of subtle points. Firstly a smell is by definition something that's quick to spot - or sniffable as I've recently put it. A long method is a good example of this - just looking at the code and my nose twitches if I see more than a dozen lines of java."
+  - "The second is that smells don't always indicate a problem. Some long methods are just fine. You have to look deeper to see if there is an underlying problem there - smells aren't inherently bad on their own - they are often an indicator of a problem rather than the problem themselves."
+  - "The best smells are something that's easy to spot and most of time lead you to really interesting problems. Data classes (classes with all data and no behavior) are good examples of this. You look at them and ask yourself what behavior should be in this class. Then you start refactoring to move that behavior in there. Often simple questions and initial refactorings can be the vital step in turning anemic objects into something that really has class."
+  - "One of the nice things about smells is that it's easy for inexperienced people to spot them, even if they don't know enough to evaluate if there's a real problem or to correct them. I've heard of lead developers who will pick a "smell of the week" and ask people to look for the smell and bring it up with the senior members of the team. Doing it one smell at a time is a good way of gradually teaching people on the team to be better programmers."

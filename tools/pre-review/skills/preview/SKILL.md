@@ -1,6 +1,6 @@
 ---
 name: preview
-description: Review local uncommitted code changes (git diff with enriched context) against existing rules in rules.md, surface issues with exact rule references and severities, and output a README-formatted report using report_template.md.
+description: Review given pr records against existing rules in rules.md, surface issues with exact rule references and severities, and output a README-formatted report using report_template.md.
 ---
 
 # Preview Skill

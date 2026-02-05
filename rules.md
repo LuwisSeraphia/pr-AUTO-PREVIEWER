@@ -20,6 +20,15 @@
 ### Dynamic Method Emission
 - [SHOULD] Batch-generate dynamic methods and attach metadata once: Accumulate the scripts for generated dunder methods, compile/eval them in a single pass, and only then attach `__module__`/`__qualname__` to the resulting callables so filenames stay consistent and we avoid repeated compilation. (ref PR 1407.json)
 
+### Converter Invocation
+- [MUST] Route converters through structured descriptors when they need context: Promote converter callables into `Converter` objects that declare whether they need the partially built instance or the `Attribute`, register those objects when emitting `__init__`, and have helpers such as `pipe()` preserve their annotations so multi-argument conversions stay zero-overhead and type-aware. (ref PR 1267.json; rule_ref: Refactoring.Guru Code Smells > Primitive Obsession)
+
+### Equality Generation
+- [SHOULD] Emit per-attribute comparison chains: Have `_make_eq` compare each attribute (or its `eq_key`) individually instead of packing tuples so equality short-circuits on the first mismatch and avoids allocating intermediate tuples. (ref PR 1310.json; rule_ref: Refactoring.Guru Code Smells > Long Method)
+
+### Frozen Exceptions
+- [MUST] Delegate BaseException-managed attributes even on frozen classes: Allow `__cause__`, `__context__`, `__suppress_context__`, and `__notes__` to be set or deleted through `BaseException` so attrs-based exception types remain compatible with the runtime protocol despite frozen enforcement. (ref PR 1365.json; rule_ref: Refactoring.Guru Code Smells > Refused Bequest)
+
 ## Data Serialization
 
 ### asdict / astuple Generation
@@ -29,6 +38,7 @@
 
 ### Benchmarks
 - [SHOULD] Extend the benchmark suite whenever optimizing core helpers: before or after changing perf-sensitive helpers (e.g., asdict/astuple or cached properties on slotted classes), add focused benchmarks that cover both shortcut-heavy objects and more complicated instances so regressions are easy to detect. (ref PR 1464.json, 1489.json)
+- [SHOULD] Tag high-cost suites with benchmark markers: Apply the `benchmark` marker (for Codspeed) to regression-heavy functional test classes so perf tooling captures them automatically instead of requiring piecemeal instrumentation. (ref PR 1299.json; rule_ref: Refactoring.Guru Code Smells > Shotgun Surgery)
 
 ## Class Construction
 
@@ -47,13 +57,19 @@
 - [MUST] Let deep validators accept optional and iterable sub-validators: `deep_mapping` must allow either key or value validators to be omitted (but not both), and both `deep_mapping` and `deep_iterable` should accept lists/tuples of validators by composing them with `and_`, with regression tests and typing examples covering list inputs. (ref PR 1448.json, 1449.json)
 
 ### Forward References
-- [MUST] Preserve forward references under annotationlib: when Python 3.14 routes annotations through `annotationlib`, request `Format.FORWARDREF`, add dedicated forward-reference tests gated by interpreter version, and ensure `resolve_types` succeeds before accessing fields. (ref PR 1451.json)
+- [MUST] Preserve forward references under `annotationlib`: when Python 3.14+ routes annotations through `annotationlib`, call `annotationlib.get_annotations()` (or request `Format.FORWARDREF` during resolution), add interpreter-gated tests, and ensure `resolve_types` succeeds before accessing fields so forward references stay loadable. (ref PR 1329.json, 1451.json)
 
 ### Stub Accuracy
 - [SHOULD] Encode tuple callables with variadic annotations: when a parameter accepts any-length tuples of callables (e.g., converter sequences), type stubs must use `tuple[T, ...]` instead of single-length tuples and add pyright coverage so tuple-of-converters produces no false positives. (ref PR 1461.json)
 
 ### Class Introspection
 - [SHOULD] Surface effective class metadata for inspection: store derived decorator settings on `__attrs_props__`, expose them via `attrs.inspect()` (documenting it as experimental), and add typing examples/tests covering `ClassProps` enums so tooling and users can reason about generated methods. (ref PR 1454.json)
+
+### Type Hint Resolution
+- [SHOULD] Always request extended metadata from `typing.get_type_hints`: Once the supported Python baseline provides `include_extras`, pass it unconditionally (along with the caller's globals/locals) so annotations that use `typing.Annotated` or similar helpers retain their metadata across interpreters. (ref PR 1349.json; rule_ref: Refactoring.Guru Code Smells > Divergent Change)
+
+### Sentinel Typing
+- [MUST] Provide literal aliases for sentinel values: Export `Literal`-based aliases (for example `NothingType = Literal[_Nothing.NOTHING]`) through the public API so downstream typing can express sentinel usage without falling back to untyped primitives. (ref PR 1358.json; rule_ref: Refactoring.Guru Code Smells > Primitive Obsession)
 
 ## Tests & Validation
 
@@ -73,6 +89,13 @@
 
 ### Validator Narratives
 - [SHOULD] Keep validator docs aligned with real behavior: Docstrings must describe the actual comparison operator or constraint they enforce so readers don't have to inspect the source to know what fails. (ref PR 1423.json)
+
+### API Canonicalization
+- [SHOULD] Make the next-gen API docs the canonical entry point: Document `attrs.define()`/`attrs.field()` directly and link back to `attr.s`/`attr.ib` from there so readers learn the preferred surface once, while legacy names remain discoverable without duplicating the narrative. (ref PR 1316.json; rule_ref: Refactoring.Guru Code Smells > Divergent Change)
+- [SHOULD] Remove references to parameters that no longer exist: As soon as keywords such as `cmp=` leave the runtime, scrub them from docstrings and argument lists so tutorials cannot instruct readers to use unsupported options. (ref PR 1355.json; rule_ref: Refactoring.Guru Code Smells > Speculative Generality)
+
+### Documentation Hygiene
+- [SHOULD] Keep module docstrings and import groups meaningful: Leave placeholder text out of user-facing docstrings and maintain blank-line separation between stdlib and project imports so docs stay professional and diff noise does not accumulate. (ref PR 1366.json; rule_ref: Refactoring.Guru Code Smells > Comments)
 
 ## Diagnostics
 
