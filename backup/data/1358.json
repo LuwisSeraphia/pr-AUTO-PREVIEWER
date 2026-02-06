@@ -1,0 +1,34 @@
+{
+  "pr_number": 1358,
+  "title": "Introduce NothingType",
+  "author": "Tinche",
+  "reason": {
+    "description": "So I introduced NothingType, but from what I can tell we're not using this anywhere? This is solely for the benefit of third parties annotating their code to accept NOTHING?",
+    "commit_messages": [
+      "Introduce NothingType",
+      "Fallback to typing_extensions",
+      "[pre-commit.ci] auto fixes from pre-commit.com hooks\n\nfor more information, see https://pre-commit.ci",
+      "Avoid TypeAlias at runtime",
+      "Add changelog",
+      "[pre-commit.ci] auto fixes from pre-commit.com hooks\n\nfor more information, see https://pre-commit.ci",
+      "Docs",
+      "Add import, test",
+      "[pre-commit.ci] auto fixes from pre-commit.com hooks\n\nfor more information, see https://pre-commit.ci",
+      "Fix test"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/__init__.py",
+      "patch": "@@ -5,7 +5,7 @@\n \"\"\"\n \n from functools import partial\n-from typing import Callable, Protocol\n+from typing import Callable, Literal, Protocol\n \n from . import converters, exceptions, filters, setters, validators\n from ._cmp import cmp_using\n@@ -16,6 +16,7 @@\n     Attribute,\n     Converter,\n     Factory,\n+    _Nothing,\n     attrib,\n     attrs,\n     fields,\n@@ -36,12 +37,15 @@ class AttrsInstance(Protocol):\n     pass\n \n \n+NothingType = Literal[_Nothing.NOTHING]\n+\n __all__ = [\n     \"NOTHING\",\n     \"Attribute\",\n     \"AttrsInstance\",\n     \"Converter\",\n     \"Factory\",\n+    \"NothingType\",\n     \"asdict\",\n     \"assoc\",\n     \"astuple\",\n"
+    },
+    {
+      "file": "src/attr/_make.py",
+      "patch": "@@ -79,6 +79,8 @@ def __bool__(self):\n NOTHING = _Nothing.NOTHING\n \"\"\"\n Sentinel to indicate the lack of a value when `None` is ambiguous.\n+\n+When using in 3rd party code, use `attrs.NothingType` for type annotations.\n \"\"\"\n \n \n"
+    },
+    {
+      "file": "src/attrs/__init__.py",
+      "patch": "@@ -6,6 +6,7 @@\n     AttrsInstance,\n     Converter,\n     Factory,\n+    NothingType,\n     _make_getattr,\n     assoc,\n     cmp_using,\n@@ -32,6 +33,7 @@\n     \"AttrsInstance\",\n     \"Converter\",\n     \"Factory\",\n+    \"NothingType\",\n     \"__author__\",\n     \"__copyright__\",\n     \"__description__\",\n"
+    }
+  ]
+}

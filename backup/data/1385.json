@@ -1,0 +1,21 @@
+{
+  "pr_number": 1385,
+  "title": "typing: allow union types for instance_of",
+  "author": "hynek",
+  "reason": {
+    "description": "fixes #1336\r\n",
+    "commit_messages": [
+      "typing: allow union types for instance_of\n\nfixes #1336",
+      "Make hint meaningful albeit broken",
+      "Stop running mypy on 3.9",
+      "Declare bankruptcy",
+      "Testing types only on 3.10+ now"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "tests/typing_example.py",
+      "patch": "@@ -228,6 +228,9 @@ class Validated:\n     k: int | str | C = attr.ib(\n         validator=attrs.validators.instance_of((int, C, str))\n     )\n+    kk: int | str | C = attr.ib(\n+        validator=attrs.validators.instance_of(int | C | str)\n+    )\n \n     l: Any = attr.ib(\n         validator=attr.validators.not_(attr.validators.in_(\"abc\"))\n"
+    }
+  ]
+}

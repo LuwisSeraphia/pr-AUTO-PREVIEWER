@@ -1,0 +1,25 @@
+{
+  "pr_number": 1415,
+  "title": "Add 3.14 to Trove classifiers",
+  "author": "Tinche",
+  "reason": {
+    "description": "See title.",
+    "commit_messages": [
+      "Add 3.14 to Trove classifiers",
+      "Merge branch 'main' into tin/3.14",
+      "Merge branch 'main' into tin/3.14",
+      "Skip pytest-mypy-plugins on 3.14\n\nUntil it works.",
+      "Run tests on 3.14",
+      "Add explanations",
+      "References work now",
+      "Try if GHA has 3.14b1 if uv has not",
+      "Skip Mypy on 3.14 for now"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "tests/test_annotations.py",
+      "patch": "@@ -13,7 +13,6 @@\n import attr\n import attrs\n \n-from attr._compat import PY_3_14_PLUS\n from attr._make import _is_class_var\n from attr.exceptions import UnannotatedAttributeError\n \n@@ -588,8 +587,6 @@ def test_self_reference(self, slots):\n         \"\"\"\n         References to self class using quotes can be resolved.\n         \"\"\"\n-        if PY_3_14_PLUS and not slots:\n-            pytest.xfail(\"References are changing a lot in 3.14.\")\n \n         @attr.s(slots=slots, auto_attribs=True)\n         class A:\n@@ -605,8 +602,6 @@ def test_forward_reference(self, slots):\n         \"\"\"\n         Forward references can be resolved.\n         \"\"\"\n-        if PY_3_14_PLUS and not slots:\n-            pytest.xfail(\"Forward references are changing a lot in 3.14.\")\n \n         @attr.s(slots=slots, auto_attribs=True)\n         class A:\n"
+    }
+  ]
+}

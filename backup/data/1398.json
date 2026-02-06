@@ -1,0 +1,17 @@
+{
+  "pr_number": 1398,
+  "title": "Don't expect TestCloudpickleCompat to fail with Python 3.14",
+  "author": "frenzymadness",
+  "reason": {
+    "description": "Cloudpickle supports Python 3.14 already.\r\n\r\nFixes: https://github.com/python-attrs/attrs/issues/1397",
+    "commit_messages": [
+      "Don't expect TestCloudpickleCompat to fail with Python 3.14\n\nCloudpickle supports Python 3.14 already.\n\nFixes: https://github.com/python-attrs/attrs/issues/1397"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "tests/test_3rd_party.py",
+      "patch": "@@ -8,17 +8,12 @@\n \n from hypothesis import given\n \n-from attr._compat import PY_3_14_PLUS\n-\n from .strategies import simple_classes\n \n \n cloudpickle = pytest.importorskip(\"cloudpickle\")\n \n \n-@pytest.mark.xfail(\n-    PY_3_14_PLUS, reason=\"cloudpickle is currently broken on 3.14.\"\n-)\n class TestCloudpickleCompat:\n     \"\"\"\n     Tests for compatibility with ``cloudpickle``.\n"
+    }
+  ]
+}

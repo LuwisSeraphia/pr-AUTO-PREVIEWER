@@ -1,0 +1,19 @@
+{
+  "pr_number": 1459,
+  "title": "Use sys._clear_type_descriptors() on 3.14 to break slot reference cycle",
+  "author": "JelleZijlstra",
+  "reason": {
+    "description": "Followup from #1446. In the latest 3.14 release candidate, we added a `sys._clear_type_descriptors` function for dataclasses to use. Let's use that function here too so we don't have to reach into the internals.\r\n\r\nNote that CPython may end up with a different solution in the future (https://github.com/python/cpython/pull/136966) that would remove the cycle without any need for hacks like this. If that merges, we can add additional conditional logic to skip this logic on 3.15+.\r\n\r\nWe could also drop the existing manual `__dict__` munging entirely; it depends on whether you care about the behavior on earlier 3.14 betas and rc1.\r\n",
+    "commit_messages": [
+      "Use sys._clear_type_descriptors() on 3.14",
+      "[pre-commit.ci] auto fixes from pre-commit.com hooks\n\nfor more information, see https://pre-commit.ci",
+      "No more deproxying"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_make.py",
+      "patch": "@@ -24,7 +24,6 @@\n     PY_3_10_PLUS,\n     PY_3_11_PLUS,\n     PY_3_13_PLUS,\n-    PY_3_14_PLUS,\n     _AnnotationExtractor,\n     _get_annotations,\n     get_generic_base,\n@@ -629,17 +628,6 @@ def evolve(*args, **changes):\n     return cls(**changes)\n \n \n-# Hack to the get the underlying dict out of a mappingproxy\n-# Use it with: cls.__dict__ | _deproxier\n-# See: https://github.com/python/cpython/pull/136893\n-class _Deproxier:\n-    def __ror__(self, other):\n-        return other\n-\n-\n-_deproxier = _Deproxier()\n-\n-\n class _ClassBuilder:\n     \"\"\"\n     Iteratively build *one* class.\n@@ -869,19 +857,9 @@ def _create_slots_class(self):\n             if k not in (*tuple(self._attr_names), \"__dict__\", \"__weakref__\")\n         }\n \n-        if PY_3_14_PLUS:\n-            # Clean up old dict to avoid leaks.\n-            old_cls_dict = self._cls.__dict__ | _deproxier\n-            old_cls_dict.pop(\"__dict__\", None)\n-            if \"__weakref__\" in self._cls.__dict__:\n-                del self._cls.__weakref__\n-\n-            # Manually bump internal version tag.\n-            try:\n-                self._cls.__abstractmethods__ = self._cls.__abstractmethods__\n-            except AttributeError:\n-                self._cls.__abstractmethods__ = frozenset({\"__init__\"})\n-                del self._cls.__abstractmethods__\n+        # 3.14.0rc2+\n+        if hasattr(sys, \"_clear_type_descriptors\"):\n+            sys._clear_type_descriptors(self._cls)\n \n         # If our class doesn't have its own implementation of __setattr__\n         # (either from the user or by us), check the bases, if one of them has\n"
+    }
+  ]
+}

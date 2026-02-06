@@ -1,0 +1,26 @@
+{
+  "pr_number": 1446,
+  "title": "Fix slotted reference cycles on 3.14",
+  "author": "hynek",
+  "reason": {
+    "description": "Ref https://github.com/python/cpython/pull/136893 & https://github.com/python/cpython/issues/135228",
+    "commit_messages": [
+      "Fix slotted reference cycles on 3.14\n\nRef https://github.com/python/cpython/pull/136893 &\nhttps://github.com/python/cpython/issues/135228\n\nCo-authored-by: Jelle Zijlstra <906600+JelleZijlstra@users.noreply.github.com>",
+      "Add news fragment",
+      "Bump version tag to CMA\n\nCo-authored-by: Brandt Bucher\n<40968415+brandtbucher@users.noreply.github.com>\nCo-authored-by: Jelle Zijlstra\n<906600+JelleZijlstra@users.noreply.github.com>",
+      "Apply review comment\n\nhttps://github.com/python-attrs/attrs/pull/1446#discussion_r2225786752",
+      "EAFP",
+      "Merge branch 'main' into fix-slots-314"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_make.py",
+      "patch": "@@ -24,6 +24,7 @@\n     PY_3_10_PLUS,\n     PY_3_11_PLUS,\n     PY_3_13_PLUS,\n+    PY_3_14_PLUS,\n     _AnnotationExtractor,\n     _get_annotations,\n     get_generic_base,\n@@ -618,6 +619,17 @@ def evolve(*args, **changes):\n     return cls(**changes)\n \n \n+# Hack to the get the underlying dict out of a mappingproxy\n+# Use it with: cls.__dict__ | _deproxier\n+# See: https://github.com/python/cpython/pull/136893\n+class _Deproxier:\n+    def __ror__(self, other):\n+        return other\n+\n+\n+_deproxier = _Deproxier()\n+\n+\n class _ClassBuilder:\n     \"\"\"\n     Iteratively build *one* class.\n@@ -845,6 +857,20 @@ def _create_slots_class(self):\n             if k not in (*tuple(self._attr_names), \"__dict__\", \"__weakref__\")\n         }\n \n+        if PY_3_14_PLUS:\n+            # Clean up old dict to avoid leaks.\n+            old_cls_dict = self._cls.__dict__ | _deproxier\n+            old_cls_dict.pop(\"__dict__\", None)\n+            if \"__weakref__\" in self._cls.__dict__:\n+                del self._cls.__weakref__\n+\n+            # Manually bump internal version tag.\n+            try:\n+                self._cls.__abstractmethods__ = self._cls.__abstractmethods__\n+            except AttributeError:\n+                self._cls.__abstractmethods__ = frozenset({\"__init__\"})\n+                del self._cls.__abstractmethods__\n+\n         # If our class doesn't have its own implementation of __setattr__\n         # (either from the user or by us), check the bases, if one of them has\n         # an attrs-made __setattr__, that needs to be reset. We don't walk the\n"
+    },
+    {
+      "file": "tests/test_make.py",
+      "patch": "@@ -23,7 +23,7 @@\n import attr\n \n from attr import _config\n-from attr._compat import PY_3_10_PLUS, PY_3_14_PLUS\n+from attr._compat import PY_3_10_PLUS\n from attr._make import (\n     Attribute,\n     Factory,\n@@ -1939,7 +1939,6 @@ class C2(C):\n \n         assert [C2] == C.__subclasses__()\n \n-    @pytest.mark.xfail(PY_3_14_PLUS, reason=\"Currently broken on nightly.\")\n     def test_no_references_to_original_when_using_cached_property(self):\n         \"\"\"\n         When subclassing a slotted class and using cached property, there are\n"
+    }
+  ]
+}

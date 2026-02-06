@@ -1,0 +1,27 @@
+{
+  "pr_number": 1473,
+  "title": "Update dev",
+  "author": "hynek",
+  "reason": {
+    "description": "",
+    "commit_messages": [
+      "Update dev env",
+      "Fix linter errors",
+      "Fix mypy tests"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "tests/test_make.py",
+      "patch": "@@ -2363,7 +2363,7 @@ def test_order_without_eq(self):\n         eq=False, order=True raises a meaningful ValueError.\n         \"\"\"\n         with pytest.raises(\n-            ValueError, match=\"`order` can only be True if `eq` is True too.\"\n+            ValueError, match=\"`order` can only be True if `eq` is True too\"\n         ):\n             _determine_attrs_eq_order(None, False, True, True)\n \n@@ -2375,7 +2375,7 @@ def test_mix(self, cmp, eq, order):\n         assume(eq is not None or order is not None)\n \n         with pytest.raises(\n-            ValueError, match=\"Don't mix `cmp` with `eq' and `order`.\"\n+            ValueError, match=\"Don't mix `cmp` with `eq' and `order`\"\n         ):\n             _determine_attrs_eq_order(cmp, eq, order, True)\n \n@@ -2430,7 +2430,7 @@ def test_order_without_eq(self):\n         eq=False, order=True raises a meaningful ValueError.\n         \"\"\"\n         with pytest.raises(\n-            ValueError, match=\"`order` can only be True if `eq` is True too.\"\n+            ValueError, match=\"`order` can only be True if `eq` is True too\"\n         ):\n             _determine_attrib_eq_order(None, False, True, True)\n \n@@ -2442,7 +2442,7 @@ def test_mix(self, cmp, eq, order):\n         assume(eq is not None or order is not None)\n \n         with pytest.raises(\n-            ValueError, match=\"Don't mix `cmp` with `eq' and `order`.\"\n+            ValueError, match=\"Don't mix `cmp` with `eq' and `order`\"\n         ):\n             _determine_attrib_eq_order(cmp, eq, order, True)\n \n"
+    },
+    {
+      "file": "tests/test_next_gen.py",
+      "patch": "@@ -277,7 +277,7 @@ class A:\n             pass\n \n         with pytest.raises(\n-            ValueError, match=\"Frozen classes can't use on_setattr.\"\n+            ValueError, match=\"Frozen classes can't use on_setattr\"\n         ):\n \n             @attrs.define(frozen=True, on_setattr=attrs.setters.validate)\n"
+    },
+    {
+      "file": "tests/test_setattr.py",
+      "patch": "@@ -366,7 +366,7 @@ def test_setattr_auto_detect_frozen(self, slots):\n         frozen=True together with a detected custom __setattr__ are rejected.\n         \"\"\"\n         with pytest.raises(\n-            ValueError, match=\"Can't freeze a class with a custom __setattr__.\"\n+            ValueError, match=\"Can't freeze a class with a custom __setattr__\"\n         ):\n \n             @attr.s(auto_detect=True, slots=slots, frozen=True)\n@@ -381,7 +381,7 @@ def test_setattr_auto_detect_on_setattr(self, slots):\n         \"\"\"\n         with pytest.raises(\n             ValueError,\n-            match=\"Can't combine custom __setattr__ with on_setattr hooks.\",\n+            match=\"Can't combine custom __setattr__ with on_setattr hooks\",\n         ):\n \n             @attr.s(auto_detect=True, slots=slots)\n"
+    }
+  ]
+}

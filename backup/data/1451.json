@@ -1,0 +1,33 @@
+{
+  "pr_number": 1451,
+  "title": "Allow forward-references on 3.14",
+  "author": "Tinche",
+  "reason": {
+    "description": "Try using stringified annotations when constructing classes.",
+    "commit_messages": [
+      "Request stringified annotations",
+      "Add test",
+      "ruff: mark test_forward_references as 3.14",
+      "Use FORWARDREF instead\n\nSee\nhttps://github.com/python/cpython/blob/9d3b53c47fab9ebf1f40d6f21b7d1ad391c14cd7/Lib/dataclasses.py#L989-L990",
+      "Fix comment",
+      "Apply docstring standard",
+      "Add news fragment\n\nUnite with the other one to avoid confusion.",
+      "Temporal form",
+      "Flesh out test"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_compat.py",
+      "patch": "@@ -17,10 +17,16 @@\n PY_3_14_PLUS = sys.version_info[:2] >= (3, 14)\n \n \n-if PY_3_14_PLUS:  # pragma: no cover\n+if PY_3_14_PLUS:\n     import annotationlib\n \n-    _get_annotations = annotationlib.get_annotations\n+    # We request forward-ref annotations to not break in the presence of\n+    # forward references.\n+\n+    def _get_annotations(cls):\n+        return annotationlib.get_annotations(\n+            cls, format=annotationlib.Format.FORWARDREF\n+        )\n \n else:\n \n"
+    },
+    {
+      "file": "tests/conftest.py",
+      "patch": "@@ -6,7 +6,7 @@\n \n from hypothesis import HealthCheck, settings\n \n-from attr._compat import PY_3_10_PLUS\n+from attr._compat import PY_3_10_PLUS, PY_3_14_PLUS\n \n \n @pytest.fixture(name=\"slots\", params=(True, False))\n@@ -33,4 +33,6 @@ def pytest_configure(config):\n \n collect_ignore = []\n if not PY_3_10_PLUS:\n-    collect_ignore.extend([\"tests/test_pattern_matching.py\"])\n+    collect_ignore.extend([\"test_pattern_matching.py\"])\n+if not PY_3_14_PLUS:\n+    collect_ignore.extend([\"test_forward_references.py\"])\n"
+    },
+    {
+      "file": "tests/test_forward_references.py",
+      "patch": "@@ -0,0 +1,22 @@\n+\"\"\"\n+Tests for behavior specific to forward references via PEP 749.\n+\"\"\"\n+\n+from attrs import define, fields, resolve_types\n+\n+\n+def test_forward_class_reference():\n+    \"\"\"\n+    Class A can reference B even though it is defined later.\n+    \"\"\"\n+\n+    @define\n+    class A:\n+        b: B\n+\n+    class B:\n+        pass\n+\n+    resolve_types(A)\n+\n+    assert fields(A).b.type is B\n"
+    }
+  ]
+}

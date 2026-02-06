@@ -1,0 +1,26 @@
+{
+  "pr_number": 1310,
+  "title": "Speed up __eq__",
+  "author": "Tinche",
+  "reason": {
+    "description": "Create the `__eq__` as a chain of ANDed comparisons, instead of a tuple.\n\nOn my computer, a class with two attributes now compares almost twice as fast: 141 ns vs 222 ns.\n\nThis will introduce a very slight incompatibility which I think is worth it for us (and dataclasses already introduced): attributes that compare equal by identity but not by value (= NaNs) will behave differently.",
+    "commit_messages": [
+      "Speed up __eq__",
+      "Changelog, disallow nans in tests",
+      "Fix `eq_key` comparisons",
+      "Rework changlelog",
+      "[pre-commit.ci] auto fixes from pre-commit.com hooks\n\nfor more information, see https://pre-commit.ci",
+      "Make docs more precise"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_make.py",
+      "patch": "@@ -1864,20 +1864,20 @@ def _make_eq(cls, attrs):\n     globs = {}\n     if attrs:\n         lines.append(\"    return  (\")\n-        others = [\"    ) == (\"]\n         for a in attrs:\n             if a.eq_key:\n                 cmp_name = f\"_{a.name}_key\"\n                 # Add the key function to the global namespace\n                 # of the evaluated function.\n                 globs[cmp_name] = a.eq_key\n-                lines.append(f\"        {cmp_name}(self.{a.name}),\")\n-                others.append(f\"        {cmp_name}(other.{a.name}),\")\n+                lines.append(\n+                    f\"        {cmp_name}(self.{a.name}) == {cmp_name}(other.{a.name})\"\n+                )\n             else:\n-                lines.append(f\"        self.{a.name},\")\n-                others.append(f\"        other.{a.name},\")\n-\n-        lines += [*others, \"    )\"]\n+                lines.append(f\"        self.{a.name} == other.{a.name}\")\n+            if a is not attrs[-1]:\n+                lines[-1] = f\"{lines[-1]} and\"\n+        lines.append(\"    )\")\n     else:\n         lines.append(\"    return True\")\n \n"
+    },
+    {
+      "file": "tests/strategies.py",
+      "patch": "@@ -75,7 +75,7 @@ def _create_hyp_nested_strategy(draw, simple_class_strategy):\n bare_attrs = st.builds(attr.ib, default=st.none())\n int_attrs = st.integers().map(lambda i: attr.ib(default=i))\n str_attrs = st.text().map(lambda s: attr.ib(default=s))\n-float_attrs = st.floats().map(lambda f: attr.ib(default=f))\n+float_attrs = st.floats(allow_nan=False).map(lambda f: attr.ib(default=f))\n dict_attrs = st.dictionaries(keys=st.text(), values=st.integers()).map(\n     lambda d: attr.ib(default=d)\n )\n"
+    }
+  ]
+}

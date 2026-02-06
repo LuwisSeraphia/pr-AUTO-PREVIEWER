@@ -1,0 +1,17 @@
+{
+  "pr_number": 1453,
+  "title": "Clarify xfail on 3.14",
+  "author": "hynek",
+  "reason": {
+    "description": "fixes #1431\r\n",
+    "commit_messages": [
+      "Clarify xfail on 3.14\n\nfixes #1431"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "tests/test_slots.py",
+      "patch": "@@ -772,11 +772,13 @@ def f(self) -> int:\n \n \n @pytest.mark.xfail(\n-    PY_3_14_PLUS, reason=\"3.14 returns weird annotation for cached_properies\"\n+    PY_3_14_PLUS, reason=\"3.14 does not infer the type anymore.\"\n )\n def test_slots_cached_property_infers_type():\n     \"\"\"\n-    Infers type of cached property.\n+    Infers type of cached property on Python 3.13 and earlier.\n+\n+    See also #1431.\n     \"\"\"\n \n     @attrs.frozen(slots=True)\n"
+    }
+  ]
+}

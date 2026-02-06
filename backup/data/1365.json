@@ -1,0 +1,30 @@
+{
+  "pr_number": 1365,
+  "title": "allow __suppress_context__ and __notes__ to be mutated on frozen exceptions",
+  "author": "graingert",
+  "reason": {
+    "description": "# Summary\r\n\r\n<!-- Please tell us what your pull request is about here. -->\r\n\r\n\r\n# Pull Request Check List\r\n\r\n<!--\r\nThis is just a friendly reminder about the most common mistakes.\r\nPlease make sure that you tick all boxes.\r\nBut please read our [contribution guide](https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md) at least once, it will save you unnecessary review cycles!\r\n\r\nIf an item doesn't apply to your pull request, **check it anyway** to make it apparent that there's nothing left to do.\r\nIf your pull request is a documentation fix or a trivial typo, feel free to delete the whole thing.\r\n-->\r\n\r\n- [x] Do **not** open pull requests from your `main` branch – **use a separate branch**!\r\n  - There's a ton of footguns waiting if you don't heed this warning. You can still go back to your project, create a branch from your main branch, push it, and open the pull request from the new branch.\r\n  - This is not a pre-requisite for your pull request to be accepted, but **you have been warned**.\r\n- [x] Added **tests** for changed code.\r\n  Our CI fails if coverage is not 100%.\r\n- [ ] New features have been added to our [Hypothesis testing strategy](https://github.com/python-attrs/attrs/blob/main/tests/strategies.py).\r\n- [ ] Changes or additions to public APIs are reflected in our type stubs (files ending in ``.pyi``).\r\n    - [ ] ...and used in the stub test file `tests/typing_example.py`.\r\n    - [ ] If they've been added to `attr/__init__.pyi`, they've *also* been re-imported in `attrs/__init__.pyi`.\r\n- [ ] Updated **documentation** for changed code.\r\n    - [ ] New functions/classes have to be added to `docs/api.rst` by hand.\r\n    - [ ] Changes to the signatures of `@attr.s()` and `@attrs.define()` have to be added by hand too.\r\n    - [ ] Changed/added classes/methods/functions have appropriate `versionadded`, `versionchanged`, or `deprecated` [directives](http://www.sphinx-doc.org/en/stable/markup/para.html#directive-versionadded).\r\n          The next version is the second number in the current release + 1.\r\n          The first number represents the current year.\r\n          So if the current version on PyPI is 22.2.0, the next version is gonna be 22.3.0.\r\n          If the next version is the first in the new year, it'll be 23.1.0.\r\n      - [ ] If something changed that affects both `attrs.define()` and `attr.s()`, you have to add version directives to both.\r\n- [ ] Documentation in `.rst` and `.md` files is written using [semantic newlines](https://rhodesmill.org/brandon/2012/one-sentence-per-line/).\r\n- [x] Changes (and possible deprecations) have news fragments in [`changelog.d`](https://github.com/python-attrs/attrs/blob/main/changelog.d).\r\n- [x] Consider granting [push permissions to the PR branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork), so maintainers can fix minor issues themselves without pestering you.\r\n\r\n<!--\r\nIf you have *any* questions to *any* of the points above, just **submit and ask**!\r\nThis checklist is here to *help* you, not to deter you from contributing!\r\n-->\r\n",
+    "commit_messages": [
+      "allow __suppress_context__ to be mutated on frozen exceptions",
+      "add changelog",
+      "and __notes__! lets' not forget that.",
+      "add notes to news",
+      "add tests",
+      "[pre-commit.ci] auto fixes from pre-commit.com hooks\n\nfor more information, see https://pre-commit.ci",
+      "fix improt",
+      "Merge branch 'patch-2' of github.com:graingert/attrs into patch-2",
+      "fix test",
+      "fix tests again"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_make.py",
+      "patch": "@@ -543,6 +543,8 @@ def _frozen_setattrs(self, name, value):\n         \"__cause__\",\n         \"__context__\",\n         \"__traceback__\",\n+        \"__suppress_context__\",\n+        \"__notes__\",\n     ):\n         BaseException.__setattr__(self, name, value)\n         return\n@@ -554,6 +556,10 @@ def _frozen_delattrs(self, name):\n     \"\"\"\n     Attached to frozen classes as __delattr__.\n     \"\"\"\n+    if isinstance(self, BaseException) and name in (\"__notes__\",):\n+        BaseException.__delattr__(self, name)\n+        return\n+\n     raise FrozenInstanceError\n \n \n"
+    },
+    {
+      "file": "tests/test_next_gen.py",
+      "patch": "@@ -14,6 +14,8 @@\n import attr as _attr  # don't use it by accident\n import attrs\n \n+from attr._compat import PY_3_11_PLUS\n+\n \n @attrs.define\n class C:\n@@ -332,7 +334,7 @@ class MyException(Exception):\n             attrs.mutable,\n         ],\n     )\n-    def test_setting_traceback_on_exception(self, decorator):\n+    def test_setting_exception_mutable_attributes(self, decorator):\n         \"\"\"\n         contextlib.contextlib (re-)sets __traceback__ on raised exceptions.\n \n@@ -354,6 +356,16 @@ def do_nothing():\n \n         # this should not raise an exception either\n         ei.value.__traceback__ = ei.value.__traceback__\n+        ei.value.__cause__ = ValueError(\"cause\")\n+        ei.value.__context__ = TypeError(\"context\")\n+        ei.value.__suppress_context__ = True\n+        ei.value.__suppress_context__ = False\n+        ei.value.__notes__ = []\n+        del ei.value.__notes__\n+\n+        if PY_3_11_PLUS:\n+            ei.value.add_note(\"note\")\n+            del ei.value.__notes__\n \n     def test_converts_and_validates_by_default(self):\n         \"\"\"\n"
+    }
+  ]
+}

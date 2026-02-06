@@ -1,0 +1,17 @@
+{
+  "pr_number": 1381,
+  "title": "Fix pyright tests to match expected pyright output after pyright 1.1.380",
+  "author": "filbranden",
+  "reason": {
+    "description": "# Summary\r\n\r\nUpdate the pyright test to match output after pyright 1.1.380, this change was introduced in https://github.com/microsoft/pyright/pull/8896 and the posted comment from github-actions bot in that PR shows the expected diff on attrs.\r\n\r\n<!-- Please tell us what your pull request is about here. -->\r\n\r\nFixes #1347.\r\n\r\n# Pull Request Check List\r\n\r\n<!--\r\nThis is just a friendly reminder about the most common mistakes.\r\nPlease make sure that you tick all boxes.\r\nBut please read our [contribution guide](https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md) at least once, it will save you unnecessary review cycles!\r\n\r\nIf an item doesn't apply to your pull request, **check it anyway** to make it apparent that there's nothing left to do.\r\nIf your pull request is a documentation fix or a trivial typo, feel free to delete the whole thing.\r\n-->\r\n\r\n- [x] Do **not** open pull requests from your `main` branch – **use a separate branch**!\r\n- [x] Added **tests** for changed code.\r\n- (N/A) New features have been added to our [Hypothesis testing strategy](https://github.com/python-attrs/attrs/blob/main/tests/strategies.py).\r\n- (N/A) Changes or additions to public APIs are reflected in our type stubs (files ending in ``.pyi``).\r\n- (N/A) Updated **documentation** for changed code.\r\n- (N/A) Documentation in `.rst` and `.md` files is written using [semantic newlines](https://rhodesmill.org/brandon/2012/one-sentence-per-line/).\r\n- (N/A) Changes (and possible deprecations) have news fragments in [`changelog.d`](https://github.com/python-attrs/attrs/blob/main/changelog.d).\r\n- [x] Consider granting [push permissions to the PR branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork), so maintainers can fix minor issues themselves without pestering you.\r\n\r\n<!--\r\nIf you have *any* questions to *any* of the points above, just **submit and ask**!\r\nThis checklist is here to *help* you, not to deter you from contributing!\r\n-->\r\n",
+    "commit_messages": [
+      "Fix pyright tests to match expected pyright output after pyright 1.1.380"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "tests/test_pyright.py",
+      "patch": "@@ -56,8 +56,7 @@ def test_pyright_baseline():\n         (\n             \"error\",\n             'Cannot assign to attribute \"a\" for class '\n-            '\"Frozen\"\\n\\xa0\\xa0\"Frozen\" is frozen\\n\\xa0\\xa0\\xa0\\xa0'\n-            'Attribute \"__set__\" is unknown',\n+            '\"Frozen\"\\n\\xa0\\xa0Attribute \"a\" is read-only',\n         ),\n         (\n             \"information\",\n@@ -66,8 +65,7 @@ def test_pyright_baseline():\n         (\n             \"error\",\n             'Cannot assign to attribute \"a\" for class '\n-            '\"FrozenDefine\"\\n\\xa0\\xa0\"FrozenDefine\" is frozen\\n\\xa0\\xa0\\xa0\\xa0'\n-            'Attribute \"__set__\" is unknown',\n+            '\"FrozenDefine\"\\n\\xa0\\xa0Attribute \"a\" is read-only',\n         ),\n         (\n             \"information\",\n"
+    }
+  ]
+}

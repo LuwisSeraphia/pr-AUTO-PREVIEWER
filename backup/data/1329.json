@@ -1,0 +1,41 @@
+{
+  "pr_number": 1329,
+  "title": "Restore basic functionality on 3.14[sic]",
+  "author": "hynek",
+  "reason": {
+    "description": "Essentially switch to PEP 649 / 749 for annotations. Some tests need to be skipped for now, but the rest is working.\r\n\r\nFixes #1326\r\n\r\nWe probably should open issues for the failing tests, but I'd rather do that only after the first alpha.",
+    "commit_messages": [
+      "Restore basic functionality on 3.14[sic]\n\nEssentially switch to PEP 649 / 749 for annotations. Some tests need to\nbe skipped for now, but the rest is working.\n\nFixes #1326",
+      "Add news fragment",
+      "We have not 3.14 CI yet",
+      "Use imprerative xfails instead of skips",
+      "Merge branch 'main' into 3.14"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_compat.py",
+      "patch": "@@ -15,6 +15,7 @@\n PY_3_10_PLUS = sys.version_info[:2] >= (3, 10)\n PY_3_12_PLUS = sys.version_info[:2] >= (3, 12)\n PY_3_13_PLUS = sys.version_info[:2] >= (3, 13)\n+PY_3_14_PLUS = sys.version_info[:2] >= (3, 14)\n \n \n if sys.version_info < (3, 8):\n@@ -25,6 +26,19 @@\n else:\n     from typing import Protocol  # noqa: F401\n \n+if PY_3_14_PLUS:  # pragma: no cover\n+    import annotationlib\n+\n+    _get_annotations = annotationlib.get_annotations\n+\n+else:\n+\n+    def _get_annotations(cls):\n+        \"\"\"\n+        Get annotations for *cls*.\n+        \"\"\"\n+        return cls.__dict__.get(\"__annotations__\", {})\n+\n \n class _AnnotationExtractor:\n     \"\"\"\n"
+    },
+    {
+      "file": "src/attr/_make.py",
+      "patch": "@@ -23,6 +23,7 @@\n     PY_3_8_PLUS,\n     PY_3_10_PLUS,\n     _AnnotationExtractor,\n+    _get_annotations,\n     get_generic_base,\n )\n from .exceptions import (\n@@ -308,13 +309,6 @@ def _has_own_attribute(cls, attrib_name):\n     return attrib_name in cls.__dict__\n \n \n-def _get_annotations(cls):\n-    \"\"\"\n-    Get annotations for *cls*.\n-    \"\"\"\n-    return cls.__dict__.get(\"__annotations__\", {})\n-\n-\n def _collect_base_attrs(cls, taken_attr_names):\n     \"\"\"\n     Collect attr.ibs from base classes of *cls*, except *taken_attr_names*.\n"
+    },
+    {
+      "file": "tests/test_3rd_party.py",
+      "patch": "@@ -8,12 +8,17 @@\n \n from hypothesis import given\n \n+from attr._compat import PY_3_14_PLUS\n+\n from .strategies import simple_classes\n \n \n cloudpickle = pytest.importorskip(\"cloudpickle\")\n \n \n+@pytest.mark.xfail(\n+    PY_3_14_PLUS, reason=\"cloudpickle is currently broken on 3.14.\"\n+)\n class TestCloudpickleCompat:\n     \"\"\"\n     Tests for compatibility with ``cloudpickle``.\n"
+    },
+    {
+      "file": "tests/test_annotations.py",
+      "patch": "@@ -12,6 +12,7 @@\n \n import attr\n \n+from attr._compat import PY_3_14_PLUS\n from attr._make import _is_class_var\n from attr.exceptions import UnannotatedAttributeError\n \n@@ -588,6 +589,8 @@ def test_self_reference(self, slots):\n         \"\"\"\n         References to self class using quotes can be resolved.\n         \"\"\"\n+        if PY_3_14_PLUS and not slots:\n+            pytest.xfail(\"References are changing a lot in 3.14.\")\n \n         @attr.s(slots=slots, auto_attribs=True)\n         class A:\n@@ -603,6 +606,8 @@ def test_forward_reference(self, slots):\n         \"\"\"\n         Forward references can be resolved.\n         \"\"\"\n+        if PY_3_14_PLUS and not slots:\n+            pytest.xfail(\"Forward references are changing a lot in 3.14.\")\n \n         @attr.s(slots=slots, auto_attribs=True)\n         class A:\n"
+    },
+    {
+      "file": "tests/test_make.py",
+      "patch": "@@ -21,7 +21,7 @@\n import attr\n \n from attr import _config\n-from attr._compat import PY_3_8_PLUS, PY_3_10_PLUS\n+from attr._compat import PY_3_8_PLUS, PY_3_10_PLUS, PY_3_14_PLUS\n from attr._make import (\n     Attribute,\n     Factory,\n@@ -1838,9 +1838,11 @@ class C2(C):\n         assert [C2] == C.__subclasses__()\n \n     @pytest.mark.skipif(not PY_3_8_PLUS, reason=\"cached_property is 3.8+\")\n+    @pytest.mark.xfail(PY_3_14_PLUS, reason=\"Currently broken on nightly.\")\n     def test_no_references_to_original_when_using_cached_property(self):\n         \"\"\"\n-        When subclassing a slotted class and using cached property, there are no stray references to the original class.\n+        When subclassing a slotted class and using cached property, there are\n+        no stray references to the original class.\n         \"\"\"\n \n         @attr.s(slots=True)\n"
+    },
+    {
+      "file": "tests/test_slots.py",
+      "patch": "@@ -3,6 +3,7 @@\n \"\"\"\n Unit tests for slots-related functionality.\n \"\"\"\n+\n import functools\n import pickle\n import weakref\n@@ -14,7 +15,7 @@\n import attr\n import attrs\n \n-from attr._compat import PY_3_8_PLUS, PYPY\n+from attr._compat import PY_3_8_PLUS, PY_3_14_PLUS, PYPY\n \n \n # Pympler doesn't work on PyPy.\n@@ -774,6 +775,9 @@ def f(self) -> int:\n \n \n @pytest.mark.skipif(not PY_3_8_PLUS, reason=\"cached_property is 3.8+\")\n+@pytest.mark.xfail(\n+    PY_3_14_PLUS, reason=\"3.14 returns weird annotation for cached_properies\"\n+)\n def test_slots_cached_property_infers_type():\n     \"\"\"\n     Infers type of cached property.\n"
+    }
+  ]
+}

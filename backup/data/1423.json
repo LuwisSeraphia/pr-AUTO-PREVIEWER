@@ -1,0 +1,17 @@
+{
+  "pr_number": 1423,
+  "title": "doc: fix typo in attrs.validators.gt's docstring: ge -> gt",
+  "author": "zed",
+  "reason": {
+    "description": "It replaces operator.ge with operator.gt, to fix  a  copy-paste error.\r\n\r\n",
+    "commit_messages": [
+      "doc: fix typo in attrs.validators.gt's docstring: ge -> gt\n\nReplace operator.ge -> operator.gt, to fix \r\na likely copy-paste error."
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/validators.py",
+      "patch": "@@ -485,7 +485,7 @@ def gt(val):\n     A validator that raises `ValueError` if the initializer is called with a\n     number smaller or equal to *val*.\n \n-    The validator uses `operator.ge` to compare the values.\n+    The validator uses `operator.gt` to compare the values.\n \n     Args:\n        val: Exclusive lower bound for values\n"
+    }
+  ]
+}

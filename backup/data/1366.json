@@ -1,0 +1,39 @@
+{
+  "pr_number": 1366,
+  "title": "B1",
+  "author": "axel-osoft",
+  "reason": {
+    "description": "# Summary\r\n\r\n<!-- Please tell us what your pull request is about here. -->\r\n\r\n\r\n# Pull Request Check List\r\n\r\n<!--\r\nThis is just a friendly reminder about the most common mistakes.\r\nPlease make sure that you tick all boxes.\r\nBut please read our [contribution guide](https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md) at least once, it will save you unnecessary review cycles!\r\n\r\nIf an item doesn't apply to your pull request, **check it anyway** to make it apparent that there's nothing left to do.\r\nIf your pull request is a documentation fix or a trivial typo, feel free to delete the whole thing.\r\n-->\r\n\r\n- [ ] Do **not** open pull requests from your `main` branch – **use a separate branch**!\r\n  - There's a ton of footguns waiting if you don't heed this warning. You can still go back to your project, create a branch from your main branch, push it, and open the pull request from the new branch.\r\n  - This is not a pre-requisite for your pull request to be accepted, but **you have been warned**.\r\n- [ ] Added **tests** for changed code.\r\n  Our CI fails if coverage is not 100%.\r\n- [ ] New features have been added to our [Hypothesis testing strategy](https://github.com/python-attrs/attrs/blob/main/tests/strategies.py).\r\n- [ ] Changes or additions to public APIs are reflected in our type stubs (files ending in ``.pyi``).\r\n    - [ ] ...and used in the stub test file `tests/typing_example.py`.\r\n    - [ ] If they've been added to `attr/__init__.pyi`, they've *also* been re-imported in `attrs/__init__.pyi`.\r\n- [ ] Updated **documentation** for changed code.\r\n    - [ ] New functions/classes have to be added to `docs/api.rst` by hand.\r\n    - [ ] Changes to the signatures of `@attr.s()` and `@attrs.define()` have to be added by hand too.\r\n    - [ ] Changed/added classes/methods/functions have appropriate `versionadded`, `versionchanged`, or `deprecated` [directives](http://www.sphinx-doc.org/en/stable/markup/para.html#directive-versionadded).\r\n          The next version is the second number in the current release + 1.\r\n          The first number represents the current year.\r\n          So if the current version on PyPI is 22.2.0, the next version is gonna be 22.3.0.\r\n          If the next version is the first in the new year, it'll be 23.1.0.\r\n      - [ ] If something changed that affects both `attrs.define()` and `attr.s()`, you have to add version directives to both.\r\n- [ ] Documentation in `.rst` and `.md` files is written using [semantic newlines](https://rhodesmill.org/brandon/2012/one-sentence-per-line/).\r\n- [ ] Changes (and possible deprecations) have news fragments in [`changelog.d`](https://github.com/python-attrs/attrs/blob/main/changelog.d).\r\n- [ ] Consider granting [push permissions to the PR branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork), so maintainers can fix minor issues themselves without pestering you.\r\n\r\n<!--\r\nIf you have *any* questions to *any* of the points above, just **submit and ask**!\r\nThis checklist is here to *help* you, not to deter you from contributing!\r\n-->\r\n",
+    "commit_messages": [
+      "Update README.rst",
+      "Update README.rst",
+      "Update README.rst",
+      "Update README.rst",
+      "Update README.rst",
+      "Update README.rst",
+      "Create pom.xml",
+      "Delete pom.xml",
+      "Update validators.py",
+      "Update validators.py",
+      "Update validators.py",
+      "Update validators.py",
+      "Update validators.py",
+      "Update validators.py",
+      "Update setup.py",
+      "Update setup.py",
+      "Update setup.py",
+      "Update README.rst",
+      "Update README.rst"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "setup.py",
+      "patch": "@@ -2,6 +2,7 @@\n \n import codecs\n import os\n+\n import platform\n import re\n import sys\n"
+    },
+    {
+      "file": "src/attr/validators.py",
+      "patch": "@@ -1,7 +1,7 @@\n # SPDX-License-Identifier: MIT\n \n \"\"\"\n-Commonly useful validators.\n+Commonly useful validators. xxyyzz\n \"\"\"\n \n from __future__ import absolute_import, division, print_function\n@@ -15,7 +15,6 @@\n from ._make import _AndValidator, and_, attrib, attrs\n from .exceptions import NotCallableError\n \n-\n try:\n     Pattern = re.Pattern\n except AttributeError:  # Python <3.7 lacks a Pattern type.\n"
+    }
+  ]
+}

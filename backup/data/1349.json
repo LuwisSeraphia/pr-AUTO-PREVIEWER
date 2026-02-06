@@ -1,0 +1,26 @@
+{
+  "pr_number": 1349,
+  "title": "Use a fully locked test environment",
+  "author": "hynek",
+  "reason": {
+    "description": "This is currently more of an open experiment to find out what's missing in uv for FOSS projects.\r\n\r\nThe first obvious problem is that it locks the local version of the package that changes after every commit (so we can have Test PyPI uploads).",
+    "commit_messages": [
+      "Use dependency groups & a fully locked dev environment",
+      "Merge branch 'main' into uv-lock",
+      "Merge branch 'main' into uv-lock",
+      "Merge branch 'main' into uv-lock",
+      "update lockfile",
+      "Update contributing guide"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_compat.py",
+      "patch": "@@ -10,7 +10,6 @@\n \n \n PYPY = platform.python_implementation() == \"PyPy\"\n-PY_3_9_PLUS = sys.version_info[:2] >= (3, 9)\n PY_3_10_PLUS = sys.version_info[:2] >= (3, 10)\n PY_3_11_PLUS = sys.version_info[:2] >= (3, 11)\n PY_3_12_PLUS = sys.version_info[:2] >= (3, 12)\n"
+    },
+    {
+      "file": "src/attr/_funcs.py",
+      "patch": "@@ -3,7 +3,7 @@\n \n import copy\n \n-from ._compat import PY_3_9_PLUS, get_generic_base\n+from ._compat import get_generic_base\n from ._make import _OBJ_SETATTR, NOTHING, fields\n from .exceptions import AttrsAttributeNotFoundError\n \n@@ -450,10 +450,11 @@ class yet.\n     if getattr(cls, \"__attrs_types_resolved__\", None) != cls:\n         import typing\n \n-        kwargs = {\"globalns\": globalns, \"localns\": localns}\n-\n-        if PY_3_9_PLUS:\n-            kwargs[\"include_extras\"] = include_extras\n+        kwargs = {\n+            \"globalns\": globalns,\n+            \"localns\": localns,\n+            \"include_extras\": include_extras,\n+        }\n \n         hints = typing.get_type_hints(cls, **kwargs)\n         for field in fields(cls) if attribs is None else attribs:\n"
+    }
+  ]
+}
