@@ -1,0 +1,17 @@
+{
+  "pr_number": 1184,
+  "title": "Fix typo in src/attr/_next_gen.py::define's docstring",
+  "author": "InSyncWithFoo",
+  "reason": {
+    "description": "Change \"suprising\" to \"su**r**prising\".",
+    "commit_messages": [
+      "Fix typo\n\n\"suprising\" -> \"surprising\""
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_next_gen.py",
+      "patch": "@@ -59,7 +59,7 @@ def define(\n       .. caution::\n \n          Usually this has only upsides and few visible effects in everyday\n-         programming. But it *can* lead to some suprising behaviors, so please\n+         programming. But it *can* lead to some surprising behaviors, so please\n          make sure to read :term:`slotted classes`.\n     - *auto_exc=True*\n     - *auto_detect=True*\n"
+    }
+  ]
+}

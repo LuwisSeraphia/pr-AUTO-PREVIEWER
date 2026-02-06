@@ -1,0 +1,23 @@
+{
+  "pr_number": 1158,
+  "title": "Switched from __dataclass_transform__() to typing.dataclass_transform()",
+  "author": "superbobry",
+  "reason": {
+    "description": "# Summary\r\n\r\nThis PR replaces the non-standard `__dataclass_transform__()` in type stubs with `typing.dataclass_transform()`, introduced in [PEP-681](https://peps.python.org/pep-0681/).\r\n\r\nThe only difference between the two decorators is the naming of one parameter: `field_descriptors=` in `__dataclass_transform__()` is now `field_specifiers=`.\r\n\r\n# Pull Request Check List\r\n\r\n- [ ] Added **tests** for changed code.\r\n  Our CI fails if coverage is not 100%.\r\n- [ ] New features have been added to our [Hypothesis testing strategy](https://github.com/python-attrs/attrs/blob/main/tests/strategies.py).\r\n- [ ] Changes or additions to public APIs are reflected in our type stubs (files ending in ``.pyi``).\r\n    - [ ] ...and used in the stub test file `tests/typing_example.py`.\r\n    - [ ] If they've been added to `attr/__init__.pyi`, they've *also* been re-imported in `attrs/__init__.pyi`.\r\n- [ ] Updated **documentation** for changed code.\r\n    - [ ] New functions/classes have to be added to `docs/api.rst` by hand.\r\n    - [ ] Changes to the signature of `@attr.s()` have to be added by hand too.\r\n    - [ ] Changed/added classes/methods/functions have appropriate `versionadded`, `versionchanged`, or `deprecated` [directives](http://www.sphinx-doc.org/en/stable/markup/para.html#directive-versionadded).\r\n          The next version is the second number in the current release + 1.\r\n          The first number represents the current year.\r\n          So if the current version on PyPI is 22.2.0, the next version is gonna be 22.3.0.\r\n          If the next version is the first in the new year, it'll be 23.1.0.\r\n- [ ] Documentation in `.rst` files is written using [semantic newlines](https://rhodesmill.org/brandon/2012/one-sentence-per-line/).\r\n- [ ] Changes (and possible deprecations) have news fragments in [`changelog.d`](https://github.com/python-attrs/attrs/blob/main/changelog.d).\r\n- [ ] Consider granting [push permissions to the PR branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork), so maintainers can fix minor issues themselves without pestering you.\r\n",
+    "commit_messages": [
+      "Switched from __dataclass_transform__() to typing.dataclass_transform()\n\nFixes #1157",
+      "[pre-commit.ci] auto fixes from pre-commit.com hooks\n\nfor more information, see https://pre-commit.ci",
+      "s/field_descriptors=/field_specifiers=/",
+      "Updated the Pyright section in \"Wrapping the Decorator\"",
+      "Removed redundant \"()\" in the test_pyright_baseline docstring",
+      "Added a changelog entry",
+      "Merge branch 'main' into typing.dataclass_transform"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "tests/test_pyright.py",
+      "patch": "@@ -41,8 +41,8 @@ def parse_pyright_output(test_file: Path) -> set[PyrightDiagnostic]:\n \n def test_pyright_baseline():\n     \"\"\"\n-    The __dataclass_transform__ decorator allows pyright to determine attrs\n-    decorated class types.\n+    The typing.dataclass_transform decorator allows pyright to determine\n+    attrs decorated class types.\n     \"\"\"\n \n     test_file = Path(__file__).parent / \"dataclass_transform_example.py\"\n"
+    }
+  ]
+}

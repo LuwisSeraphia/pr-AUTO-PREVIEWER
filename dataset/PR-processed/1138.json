@@ -1,0 +1,21 @@
+{
+  "pr_number": 1138,
+  "title": "Fix pyright for 1.1.311",
+  "author": "hynek",
+  "reason": {
+    "description": "They support converters now!\r\n",
+    "commit_messages": [
+      "Fix pyright for 1.1.311\n\nThey support converters now!"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "tests/dataclass_transform_example.py",
+      "patch": "@@ -21,6 +21,8 @@ class DefineConverter:\n \n reveal_type(DefineConverter.__init__)  # noqa\n \n+DefineConverter(with_converter=b\"42\")\n+\n \n @attr.frozen()\n class Frozen:\n"
+    },
+    {
+      "file": "tests/test_pyright.py",
+      "patch": "@@ -1,10 +1,13 @@\n # SPDX-License-Identifier: MIT\n \n+from __future__ import annotations\n+\n import json\n-import os.path\n import shutil\n import subprocess\n \n+from pathlib import Path\n+\n import pytest\n \n import attrs\n@@ -23,7 +26,7 @@ class PyrightDiagnostic:\n     message: str\n \n \n-def parse_pyright_output(test_file):\n+def parse_pyright_output(test_file: Path) -> set[PyrightDiagnostic]:\n     pyright = subprocess.run(\n         [\"pyright\", \"--outputjson\", str(test_file)], capture_output=True\n     )\n@@ -42,11 +45,11 @@ def test_pyright_baseline():\n     decorated class types.\n     \"\"\"\n \n-    test_file = os.path.dirname(__file__) + \"/dataclass_transform_example.py\"\n+    test_file = Path(__file__).parent / \"dataclass_transform_example.py\"\n \n     diagnostics = parse_pyright_output(test_file)\n \n-    # Expected diagnostics as per pyright 1.1.135\n+    # Expected diagnostics as per pyright 1.1.311\n     expected_diagnostics = {\n         PyrightDiagnostic(\n             severity=\"information\",\n@@ -55,8 +58,10 @@ def test_pyright_baseline():\n         ),\n         PyrightDiagnostic(\n             severity=\"information\",\n-            message='Type of \"DefineConverter.__init__\" is '\n-            '\"(self: DefineConverter, with_converter: int) -> None\"',\n+            message='Type of \"DefineConverter.__init__\" is \"(self: '\n+            \"DefineConverter, with_converter: str | bytes | bytearray | \"\n+            \"memoryview | array[Any] | mmap | _CData | PickleBuffer | \"\n+            'SupportsInt | SupportsIndex | SupportsTrunc) -> None\"',\n         ),\n         PyrightDiagnostic(\n             severity=\"error\",\n"
+    }
+  ]
+}

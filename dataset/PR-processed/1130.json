@@ -1,0 +1,17 @@
+{
+  "pr_number": 1130,
+  "title": "Fix intersphinx",
+  "author": "hynek",
+  "reason": {
+    "description": "They've deprecated the old syntax.",
+    "commit_messages": [
+      "Fix intersphinx"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "docs/conf.py",
+      "patch": "@@ -159,9 +159,7 @@\n \n epub_description = \"Python Clases Without Boilerplate\"\n \n-intersphinx_mapping = {\n-    \"https://docs.python.org/3\": None,\n-}\n+intersphinx_mapping = {\"python\": (\"https://docs.python.org/3\", None)}\n \n # Allow non-local URIs so we can have images in CHANGELOG etc.\n suppress_warnings = [\"image.nonlocal_uri\"]\n"
+    }
+  ]
+}

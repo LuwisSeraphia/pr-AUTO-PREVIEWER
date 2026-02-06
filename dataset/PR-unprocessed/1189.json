@@ -1,0 +1,18 @@
+{
+  "pr_number": 1189,
+  "title": "[pre-commit.ci] pre-commit autoupdate",
+  "author": "pre-commit-ci[bot]",
+  "reason": {
+    "description": "<!--pre-commit.ci start-->\nupdates:\n- [github.com/psf/black: 23.7.0 → 23.9.1](https://github.com/psf/black/compare/23.7.0...23.9.1)\n- [github.com/astral-sh/ruff-pre-commit: v0.0.287 → v0.0.292](https://github.com/astral-sh/ruff-pre-commit/compare/v0.0.287...v0.0.292)\n<!--pre-commit.ci end-->",
+    "commit_messages": [
+      "[pre-commit.ci] pre-commit autoupdate\n\nupdates:\n- [github.com/psf/black: 23.7.0 → 23.9.1](https://github.com/psf/black/compare/23.7.0...23.9.1)\n- [github.com/astral-sh/ruff-pre-commit: v0.0.287 → v0.0.292](https://github.com/astral-sh/ruff-pre-commit/compare/v0.0.287...v0.0.292)",
+      "[pre-commit.ci] auto fixes from pre-commit.com hooks\n\nfor more information, see https://pre-commit.ci"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_make.py",
+      "patch": "@@ -495,7 +495,7 @@ def _transform_attrs(\n     anns = _get_annotations(cls)\n \n     if these is not None:\n-        ca_list = [(name, ca) for name, ca in these.items()]\n+        ca_list = list(these.items())\n     elif auto_attribs is True:\n         ca_names = {\n             name\n"
+    }
+  ]
+}

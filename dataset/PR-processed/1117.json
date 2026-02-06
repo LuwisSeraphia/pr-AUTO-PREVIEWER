@@ -1,0 +1,30 @@
+{
+  "pr_number": 1117,
+  "title": "Raise a deprecation warning when evolve receives insta as a kw arg",
+  "author": "hynek",
+  "reason": {
+    "description": "this looking ok @ikonst?\r\n\r\nFixes #1109\r\n",
+    "commit_messages": [
+      "Raise a deprecation warning when evolve receives insta as a kw arg\n\nFixes #1109",
+      "Add news fragment",
+      "Raise a better error",
+      "Handle too many pos args",
+      "Merge branch 'main' into deprecate-evolve-kw",
+      "Lazy import",
+      "Trim traceback",
+      "Add test evolving a field named inst",
+      "Spelling",
+      "Spin positively"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_funcs.py",
+      "patch": "@@ -351,9 +351,10 @@ def assoc(inst, **changes):\n     return new\n \n \n-def evolve(inst, **changes):\n+def evolve(*args, **changes):\n     \"\"\"\n-    Create a new instance, based on *inst* with *changes* applied.\n+    Create a new instance, based on the first positional argument with\n+    *changes* applied.\n \n     :param inst: Instance of a class with *attrs* attributes.\n     :param changes: Keyword changes in the new copy.\n@@ -365,8 +366,40 @@ def evolve(inst, **changes):\n     :raise attrs.exceptions.NotAnAttrsClassError: If *cls* is not an *attrs*\n         class.\n \n-    ..  versionadded:: 17.1.0\n+    .. versionadded:: 17.1.0\n+    .. deprecated:: 23.1.0\n+       It is now deprecated to pass the instance using the keyword argument\n+       *inst*. It will raise a warning until at least April 2024, after which\n+       it will become an error. Always pass the instance as a positional\n+       argument.\n     \"\"\"\n+    # Try to get instance by positional argument first.\n+    # Use changes otherwise and warn it'll break.\n+    if args:\n+        try:\n+            (inst,) = args\n+        except ValueError:\n+            raise TypeError(\n+                f\"evolve() takes 1 positional argument, but {len(args)} \"\n+                \"were given\"\n+            ) from None\n+    else:\n+        try:\n+            inst = changes.pop(\"inst\")\n+        except KeyError:\n+            raise TypeError(\n+                \"evolve() missing 1 required positional argument: 'inst'\"\n+            ) from None\n+\n+        import warnings\n+\n+        warnings.warn(\n+            \"Passing the instance per keyword argument is deprecated and \"\n+            \"will stop working in, or after, April 2024.\",\n+            DeprecationWarning,\n+            stacklevel=2,\n+        )\n+\n     cls = inst.__class__\n     attrs = fields(cls)\n     for a in attrs:\n"
+    },
+    {
+      "file": "tests/test_funcs.py",
+      "patch": "@@ -689,3 +689,47 @@ class Cls2:\n         assert Cls1({\"foo\": 42, \"param2\": 42}) == attr.evolve(\n             obj1a, param1=obj2b\n         )\n+\n+    def test_inst_kw(self):\n+        \"\"\"\n+        If `inst` is passed per kw argument, a warning is raised.\n+        See #1109\n+        \"\"\"\n+\n+        @attr.s\n+        class C:\n+            pass\n+\n+        with pytest.warns(DeprecationWarning) as wi:\n+            evolve(inst=C())\n+\n+        assert __file__ == wi.list[0].filename\n+\n+    def test_no_inst(self):\n+        \"\"\"\n+        Missing inst argument raises a TypeError like Python would.\n+        \"\"\"\n+        with pytest.raises(TypeError, match=r\"evolve\\(\\) missing 1\"):\n+            evolve(x=1)\n+\n+    def test_too_many_pos_args(self):\n+        \"\"\"\n+        More than one positional argument raises a TypeError like Python would.\n+        \"\"\"\n+        with pytest.raises(\n+            TypeError,\n+            match=r\"evolve\\(\\) takes 1 positional argument, but 2 were given\",\n+        ):\n+            evolve(1, 2)\n+\n+    def test_can_change_inst(self):\n+        \"\"\"\n+        If the instance is passed by positional argument, a field named `inst`\n+        can be changed.\n+        \"\"\"\n+\n+        @attr.define\n+        class C:\n+            inst: int\n+\n+        assert C(42) == evolve(C(23), inst=42)\n"
+    }
+  ]
+}

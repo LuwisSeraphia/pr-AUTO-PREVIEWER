@@ -1,0 +1,17 @@
+{
+  "pr_number": 1141,
+  "title": "Fix type annotation for resolve_types()",
+  "author": "hynek",
+  "reason": {
+    "description": "Fixes #1132\r\n",
+    "commit_messages": [
+      "Fix type annotation for resolve_types()\n\nFixes #1132"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "tests/typing_example.py",
+      "patch": "@@ -468,3 +468,8 @@ def accessing_from_attrs() -> None:\n @attrs.define(unsafe_hash=True)\n class Hashable:\n     pass\n+\n+\n+def test(cls: type) -> None:\n+    if attr.has(cls):\n+        attr.resolve_types(cls)\n"
+    }
+  ]
+}

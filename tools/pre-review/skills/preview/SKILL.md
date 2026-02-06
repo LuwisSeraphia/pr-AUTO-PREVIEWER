@@ -25,7 +25,7 @@ Use this skill to evaluate local, uncommitted changes from `git diff` with enric
    - Base conclusions on the enriched context + diff, not on single-line patterns.
    - Do not invent issues; if clean, note the absence of findings.
    - Provide concrete suggestions tied to the observed diff (e.g., required action to comply with the rule).
-4) Populate a report following `report_template.md` into a README-style output (named `README.md` in the working directory or returned as content). Include:
+4) Populate a report following `report_template.md` into a README-style output (named `README.md` in the working directory or returned as content) **and additionally save an identical copy as `repo_date_<PR-ID>.md`** (for example `repo_date_1507.md`) so downstream tooling can archive the review per PR. Include:
    - File path and status (`clean` or `issues-found`).
    - Summary (concise).
    - Findings list with `[SEVERITY] Rule "<title>" (Category > Subcategory, rule #n)` plus description, location, suggestion, and `(ref <file path>)`.
@@ -39,7 +39,7 @@ Use this skill to evaluate local, uncommitted changes from `git diff` with enric
 - Always include the PR filename in `(ref ...)` for each finding.
 
 ## Output
-- A README-formatted report using `report_template.md`. If no issues, set `Status: clean` and leave Findings empty except for a note that no issues were found.
+- A README-formatted report using `report_template.md`, plus a duplicate stored as `repo_date_<PR-ID>.md`. If no issues, set `Status: clean` and leave Findings empty except for a note that no issues were found.
 
 ## Quality Checks
 - No non-Python diffs considered.

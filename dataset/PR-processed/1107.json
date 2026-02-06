@@ -1,0 +1,32 @@
+{
+  "pr_number": 1107,
+  "title": "Added `type` parameter to `attrs.field()` function",
+  "author": "chrysle",
+  "reason": {
+    "description": "# Summary\r\n\r\n<!-- Please tell us what your pull request is about here. -->\r\nThis resolves #1082 \r\n\r\nCould somebody help me with the tests? I'm not sure they're right where they are. \r\n\r\n# Pull Request Check List\r\n\r\n<!--\r\nThis is just a friendly reminder about the most common mistakes.\r\nPlease make sure that you tick all boxes.\r\nBut please read our [contribution guide](https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md) at least once, it will save you unnecessary review cycles!\r\n\r\nIf an item doesn't apply to your pull request, **check it anyway** to make it apparent that there's nothing left to do.\r\nIf your pull request is a documentation fix or a trivial typo, feel free to delete the whole thing.\r\n-->\r\n\r\n- [x] Added **tests** for changed code.\r\n  Our CI fails if coverage is not 100%.\r\n- [ ] New features have been added to our [Hypothesis testing strategy](https://github.com/python-attrs/attrs/blob/main/tests/strategies.py).\r\n- [x] Changes or additions to public APIs are reflected in our type stubs (files ending in ``.pyi``).\r\n    - [ ] ...and used in the stub test file `tests/typing_example.py`.\r\n    - [ ] If they've been added to `attr/__init__.pyi`, they've *also* been re-imported in `attrs/__init__.pyi`.\r\n- [x] Updated **documentation** for changed code.\r\n    - [ ] New functions/classes have to be added to `docs/api.rst` by hand.\r\n    - [ ] Changes to the signature of `@attr.s()` have to be added by hand too.\r\n    - [x] Changed/added classes/methods/functions have appropriate `versionadded`, `versionchanged`, or `deprecated` [directives](http://www.sphinx-doc.org/en/stable/markup/para.html#directive-versionadded).\r\n          The next version is the second number in the current release + 1.\r\n          So if the current version on PyPI is 23.1.0, the next version is gonna be 23.2.0.\r\n- [ ] Documentation in `.rst` files is written using [semantic newlines](https://rhodesmill.org/brandon/2012/one-sentence-per-line/).\r\n- [x] Changes (and possible deprecations) have news fragments in [`changelog.d`](https://github.com/python-attrs/attrs/blob/main/changelog.d).\r\n- [x] Consider granting [push permissions to the PR branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork), so maintainers can fix minor issues themselves without pestering you.\r\n\r\n<!--\r\nIf you have *any* questions to *any* of the points above, just **submit and ask**!\r\nThis checklist is here to *help* you, not to deter you from contributing!\r\n-->\r\n",
+    "commit_messages": [
+      "Added `type` parameter to `attrs.field` and test",
+      "Added notice in examples.md",
+      "[pre-commit.ci] auto fixes from pre-commit.com hooks\n\nfor more information, see https://pre-commit.ci",
+      "Added changelog entry",
+      "Merge branch 'type_attrs_field' of github.com:chrysle/attrs into type_attrs_field",
+      "Merge branch 'main' into type_attrs_field",
+      "Merge branch 'main' into type_attrs_field",
+      "Fixed docs",
+      "Merge branch 'type_attrs_field' of github.com:chrysle/attrs into type_attrs_field",
+      "Merge branch 'main' into type_attrs_field",
+      "Merge branch 'main' into type_attrs_field",
+      "Apply suggestions from code review"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_next_gen.py",
+      "patch": "@@ -167,6 +167,7 @@ def field(\n     hash=None,\n     init=True,\n     metadata=None,\n+    type=None,\n     converter=None,\n     factory=None,\n     kw_only=False,\n@@ -179,6 +180,10 @@ def field(\n     Identical to `attr.ib`, except keyword-only and with some arguments\n     removed.\n \n+    .. versionadded:: 22.3.0\n+       The *type* parameter has been re-added; mostly for\n+       {func}`attrs.make_class`. Please note that type checkers ignore this\n+       metadata.\n     .. versionadded:: 20.1.0\n     \"\"\"\n     return attrib(\n@@ -188,6 +193,7 @@ def field(\n         hash=hash,\n         init=init,\n         metadata=metadata,\n+        type=type,\n         converter=converter,\n         factory=factory,\n         kw_only=kw_only,\n"
+    },
+    {
+      "file": "tests/test_next_gen.py",
+      "patch": "@@ -28,6 +28,16 @@ def test_simple(self):\n         \"\"\"\n         C(\"1\", 2)\n \n+    def test_field_type(self):\n+        \"\"\"\n+        Make class with attrs.field and type parameter.\n+        \"\"\"\n+        classFields = {\"testint\": attrs.field(type=int)}\n+\n+        A = attrs.make_class(\"A\", classFields)\n+\n+        assert int == attrs.fields(A).testint.type\n+\n     def test_no_slots(self):\n         \"\"\"\n         slots can be deactivated.\n"
+    }
+  ]
+}

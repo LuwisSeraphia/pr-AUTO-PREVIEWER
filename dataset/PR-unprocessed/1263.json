@@ -1,0 +1,23 @@
+{
+  "pr_number": 1263,
+  "title": "Deprecate attr.s's repr_ns",
+  "author": "hynek",
+  "reason": {
+    "description": "It's pointless in Python 3. define et al never had it.\r\n",
+    "commit_messages": [
+      "Deprecate attr.s's repr_ns\n\nIt's pointless in Python 3. define et al never had it.",
+      "Add news fragment",
+      "Fix typo"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_make.py",
+      "patch": "@@ -1354,7 +1354,8 @@ def attrs(\n \n     :param str repr_ns: When using nested classes, there was no way in Python 2\n         to automatically detect that.  This argument allows to set a custom\n-        name for a more meaningful ``repr`` output.\n+        name for a more meaningful ``repr`` output.  This argument\n+        is pointless in Python 3 and is therefore deprecated.\n     :param bool auto_detect: Instead of setting the *init*, *repr*, *eq*,\n         *order*, and *hash* arguments explicitly, assume they are set to\n         ``True`` **unless any** of the involved methods for one of the\n@@ -1597,7 +1598,18 @@ def attrs(\n     .. versionadded:: 21.3.0 *match_args*\n     .. versionadded:: 22.2.0\n        *unsafe_hash* as an alias for *hash* (for :pep:`681` compliance).\n+    .. deprecated:: 24.1.0 *repr_ns*\n     \"\"\"\n+    if repr_ns is not None:\n+        import warnings\n+\n+        warnings.warn(\n+            DeprecationWarning(\n+                \"The `repr_ns` argument is deprecated and will be removed in or after April 2025.\"\n+            ),\n+            stacklevel=2,\n+        )\n+\n     eq_, order_ = _determine_attrs_eq_order(cmp, eq, order, None)\n \n     # unsafe_hash takes precedence due to PEP 681.\n"
+    },
+    {
+      "file": "tests/test_make.py",
+      "patch": "@@ -600,11 +600,13 @@ def test_repr_fake_qualname(self, slots_outer, slots_inner):\n         Setting repr_ns overrides a potentially guessed namespace.\n         \"\"\"\n \n-        @attr.s(slots=slots_outer)\n-        class C:\n-            @attr.s(repr_ns=\"C\", slots=slots_inner)\n-            class D:\n-                pass\n+        with pytest.deprecated_call(match=\"The `repr_ns` argument\"):\n+\n+            @attr.s(slots=slots_outer)\n+            class C:\n+                @attr.s(repr_ns=\"C\", slots=slots_inner)\n+                class D:\n+                    pass\n \n         assert \"C.D()\" == repr(C.D())\n \n"
+    }
+  ]
+}

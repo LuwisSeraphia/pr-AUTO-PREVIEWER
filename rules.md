@@ -29,6 +29,9 @@
 ### Frozen Exceptions
 - [MUST] Delegate BaseException-managed attributes even on frozen classes: Allow `__cause__`, `__context__`, `__suppress_context__`, and `__notes__` to be set or deleted through `BaseException` so attrs-based exception types remain compatible with the runtime protocol despite frozen enforcement. (ref PR 1365.json; rule_ref: Refactoring.Guru Code Smells > Refused Bequest)
 
+### Instance Copy Helpers
+- [SHOULD] Prefer positional instance arguments for copy/evolve helpers: accept the source instance positionally, emit Python-native `TypeError`s for missing or extra positional arguments, and only fall back to keyword-based inst parameters with a deprecation warning so attribute names can safely reuse `inst` without collisions. (ref PR 1117.json)
+
 ## Data Serialization
 
 ### asdict / astuple Generation
@@ -45,7 +48,13 @@
 ### Unicode Identifiers
 - [MAY] Normalize provided identifiers before class creation: Normalize class and attribute names (e.g., NFKC) before passing them into `make_class` so any valid Unicode identifier accepted by Python also works for generated attrs types across interpreters. (ref PR 1406.json)
 
+### Field Builder Parity
+- [SHOULD] Keep next-generation field helpers feature-complete with legacy attribute factories: ensure parameters that carry metadata (like declared types) are accepted so dynamic class builders preserve the same information regardless of which helper initializes the attribute. (ref PR 1107.json; rule_ref: Refactoring.Guru Code Smells > Divergent Change)
+
 ## Typing & Tooling
+
+### Pyright Baseline
+- [SHOULD] Track Pyright feature releases in baseline tests: When pyright changes the diagnostics it emits or broadens accepted converter inputs, refresh the baseline fixtures (typed helpers, representative call sites, and expected message strings) so our dataclass-transform coverage mirrors the tool’s current behavior. (ref PR 1138.json, 1158.json)
 
 ### Baseline vs Tool-Specific Coverage
 - [SHOULD] Keep baseline typing examples backend-neutral: scenarios that rely on mypy plugins or tool-specific behaviors belong in dedicated modules, while the shared baseline should only demonstrate features supported by every configured checker, and its assertions must be updated when dev dependencies (e.g., Python/pyright versions) change. (ref PR 1474.json, 1492.json)
@@ -54,10 +63,13 @@
 - [SHOULD] Provide type hints and tests for heterogeneous validators: combinators such as `attrs.validators.or_` must advertise overloads that accept validators with differing input types, and baseline typing examples should instantiate such mixed validators to guard the contract. (ref PR 1471.json, 1474.json)
 
 ### Deep Validator Flexibility
-- [MUST] Let deep validators accept optional and iterable sub-validators: `deep_mapping` must allow either key or value validators to be omitted (but not both), and both `deep_mapping` and `deep_iterable` should accept lists/tuples of validators by composing them with `and_`, with regression tests and typing examples covering list inputs. (ref PR 1448.json, 1449.json)
+- [MUST] Let composite validators accept optional and iterable sub-validators: `deep_mapping` must allow either key or value validators to be omitted (but not both), both `deep_mapping` and `deep_iterable` should accept lists/tuples of validators by composing them with `and_`, and `optional` should treat tuples the same as lists when building its combined validator so tuple-based call sites and typing examples stay valid. (ref PR 1122.json, 1448.json, 1449.json)
 
 ### Forward References
 - [MUST] Preserve forward references under `annotationlib`: when Python 3.14+ routes annotations through `annotationlib`, call `annotationlib.get_annotations()` (or request `Format.FORWARDREF` during resolution), add interpreter-gated tests, and ensure `resolve_types` succeeds before accessing fields so forward references stay loadable. (ref PR 1329.json, 1451.json)
+
+### Type Resolution
+- [SHOULD] Gate `resolve_types` calls with capability checks: Only invoke `attr.resolve_types()` after confirming the target is an attrs-managed class (for example via `attr.has`) so runtime helpers and type checkers agree on where type metadata exists. (ref PR 1141.json)
 
 ### Stub Accuracy
 - [SHOULD] Encode tuple callables with variadic annotations: when a parameter accepts any-length tuples of callables (e.g., converter sequences), type stubs must use `tuple[T, ...]` instead of single-length tuples and add pyright coverage so tuple-of-converters produces no false positives. (ref PR 1461.json)
@@ -66,7 +78,7 @@
 - [SHOULD] Surface effective class metadata for inspection: store derived decorator settings on `__attrs_props__`, expose them via `attrs.inspect()` (documenting it as experimental), and add typing examples/tests covering `ClassProps` enums so tooling and users can reason about generated methods. (ref PR 1454.json)
 
 ### Type Hint Resolution
-- [SHOULD] Always request extended metadata from `typing.get_type_hints`: Once the supported Python baseline provides `include_extras`, pass it unconditionally (along with the caller's globals/locals) so annotations that use `typing.Annotated` or similar helpers retain their metadata across interpreters. (ref PR 1349.json; rule_ref: Refactoring.Guru Code Smells > Divergent Change)
+- [SHOULD] Always request extended metadata from `typing.get_type_hints`: Once the supported Python baseline provides `include_extras`, pass it (along with the caller's globals/locals) and expose an opt-out flag so annotations that use `typing.Annotated` or similar helpers retain their metadata across interpreters without surprising callers that need bare types. (ref PR 1099.json, 1349.json; rule_ref: Refactoring.Guru Code Smells > Divergent Change)
 
 ### Sentinel Typing
 - [MUST] Provide literal aliases for sentinel values: Export `Literal`-based aliases (for example `NothingType = Literal[_Nothing.NOTHING]`) through the public API so downstream typing can express sentinel usage without falling back to untyped primitives. (ref PR 1358.json; rule_ref: Refactoring.Guru Code Smells > Primitive Obsession)
@@ -87,6 +99,9 @@
 ### Sphinx Roles
 - [MAY] Reference literals with Sphinx roles: when documenting booleans or sentinel objects, prefer `:data:` (e.g., `:data:\`True\``) over plain text so docs render correctly and stay consistent with the rest of the guide. (ref PR 1432.json)
 
+### Sphinx Configuration
+- [SHOULD] Keep `intersphinx_mapping` keyed and explicit: Define entries as `{alias: (url, inventory)}` instead of the deprecated `{url: None}` form so modern Sphinx releases resolve references without warnings when the syntax changes. (ref PR 1130.json)
+
 ### Validator Narratives
 - [SHOULD] Keep validator docs aligned with real behavior: Docstrings must describe the actual comparison operator or constraint they enforce so readers don't have to inspect the source to know what fails. (ref PR 1423.json)
 
@@ -101,3 +116,7 @@
 
 ### User-Facing Text
 - [SHOULD] Mention the conflicting argument in exception text: When rejecting attribute definitions (e.g., both annotation and explicit `type=`), include the attribute name in the error so users can immediately locate the offender. (ref PR 1410.json)
+
+### Deprecation Signaling
+- [SHOULD] Retire deprecation warnings for APIs that must remain available: when a helper stays to cover edge cases, drop unconditional warnings and instead document why an alternative is preferred so linters and users aren't flooded with noise they cannot act on. (ref PR 1119.json)
+- [SHOULD] Emit DeprecationWarning at the entry points of integrations that are being removed: gate optional third-party validators or adapters with warnings (and update tests to expect them) so downstream projects have a clear migration window before the dependency is dropped. (ref PR 1120.json)

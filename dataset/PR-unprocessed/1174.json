@@ -1,0 +1,17 @@
+{
+  "pr_number": 1174,
+  "title": "Modernize stubs",
+  "author": "hynek",
+  "reason": {
+    "description": "",
+    "commit_messages": [
+      "Modernize stubs"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "tests/typing_example.py",
+      "patch": "@@ -1,8 +1,10 @@\n # SPDX-License-Identifier: MIT\n \n+from __future__ import annotations\n+\n import re\n \n-from typing import Any, Dict, List, Tuple, Union\n+from typing import Any, Dict, List\n \n import attr\n import attrs\n@@ -49,12 +51,12 @@ class CC:\n \n @attr.s\n class DD:\n-    x: List[int] = attr.ib()\n+    x: list[int] = attr.ib()\n \n \n @attr.s\n class EE:\n-    y: \"List[int]\" = attr.ib()\n+    y: \"list[int]\" = attr.ib()\n \n \n @attr.s\n@@ -176,12 +178,6 @@ class Validated:\n             attr.validators.instance_of(C), attr.validators.instance_of(list)\n         ),\n     )\n-    a = attr.ib(\n-        type=Tuple[C],\n-        validator=attr.validators.deep_iterable(\n-            attr.validators.instance_of(C), attr.validators.instance_of(tuple)\n-        ),\n-    )\n     b = attr.ib(\n         type=List[C],\n         validator=attr.validators.deep_iterable(\n@@ -210,10 +206,8 @@ class Validated:\n     # Test different forms of instance_of\n     g: int = attr.ib(validator=attr.validators.instance_of(int))\n     h: int = attr.ib(validator=attr.validators.instance_of((int,)))\n-    j: Union[int, str] = attr.ib(\n-        validator=attr.validators.instance_of((int, str))\n-    )\n-    k: Union[int, str, C] = attr.ib(\n+    j: int | str = attr.ib(validator=attr.validators.instance_of((int, str)))\n+    k: int | str | C = attr.ib(\n         validator=attrs.validators.instance_of((int, C, str))\n     )\n \n@@ -324,14 +318,14 @@ class ValidatedSetter2:\n \n \n # field_transformer\n-def ft_hook(cls: type, attribs: List[attr.Attribute]) -> List[attr.Attribute]:\n+def ft_hook(cls: type, attribs: list[attr.Attribute]) -> list[attr.Attribute]:\n     return attribs\n \n \n # field_transformer\n def ft_hook2(\n-    cls: type, attribs: List[attrs.Attribute]\n-) -> List[attrs.Attribute]:\n+    cls: type, attribs: list[attrs.Attribute]\n+) -> list[attrs.Attribute]:\n     return attribs\n \n \n@@ -395,16 +389,16 @@ class MRO:\n \n @attr.s\n class FactoryTest:\n-    a: List[int] = attr.ib(default=attr.Factory(list))\n-    b: List[Any] = attr.ib(default=attr.Factory(list, False))\n-    c: List[int] = attr.ib(default=attr.Factory((lambda s: s.a), True))\n+    a: list[int] = attr.ib(default=attr.Factory(list))\n+    b: list[Any] = attr.ib(default=attr.Factory(list, False))\n+    c: list[int] = attr.ib(default=attr.Factory((lambda s: s.a), True))\n \n \n @attrs.define\n class FactoryTest2:\n-    a: List[int] = attrs.field(default=attrs.Factory(list))\n-    b: List[Any] = attrs.field(default=attrs.Factory(list, False))\n-    c: List[int] = attrs.field(default=attrs.Factory((lambda s: s.a), True))\n+    a: list[int] = attrs.field(default=attrs.Factory(list))\n+    b: list[Any] = attrs.field(default=attrs.Factory(list, False))\n+    c: list[int] = attrs.field(default=attrs.Factory((lambda s: s.a), True))\n \n \n attrs.asdict(FactoryTest2())\n"
+    }
+  ]
+}

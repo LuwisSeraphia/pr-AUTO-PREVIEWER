@@ -1,0 +1,17 @@
+{
+  "pr_number": 1202,
+  "title": "Fix mypy and pyright tests in CI",
+  "author": "eltoder",
+  "reason": {
+    "description": "# Summary\r\n\r\nSome error messages changed in mypy 1.7.0 and pyright 1.1.335.\r\n\r\nAlso, test_mypy sometimes fails with xdist (-n auto). A failure I can\r\nreliably reproduce locally is due to changes in type variables numbering.\r\nThere may be other issues.",
+    "commit_messages": [
+      "Fix mypy and pyright tests in CI\n\nSome error messages changed in mypy 1.7.0 and pyright 1.1.335.\n\nAlso, test_mypy sometimes fails with xdist (-n auto). A failure I can\nreliably reproduce locally is due to changes in type variables numbering.\nThere may be other issues."
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "tests/test_pyright.py",
+      "patch": "@@ -65,7 +65,7 @@ def test_pyright_baseline():\n         PyrightDiagnostic(\n             severity=\"error\",\n             message='Cannot assign member \"a\" for type '\n-            '\"Frozen\"\\n\\xa0\\xa0\"Frozen\" is frozen',\n+            '\"Frozen\"\\n\\xa0\\xa0\"Frozen\" is frozen\\n\\xa0\\xa0\\xa0\\xa0Member \"__set__\" is unknown',\n         ),\n         PyrightDiagnostic(\n             severity=\"information\",\n@@ -74,7 +74,8 @@ def test_pyright_baseline():\n         PyrightDiagnostic(\n             severity=\"error\",\n             message='Cannot assign member \"a\" for type '\n-            '\"FrozenDefine\"\\n\\xa0\\xa0\"FrozenDefine\" is frozen',\n+            '\"FrozenDefine\"\\n\\xa0\\xa0\"FrozenDefine\" is frozen\\n\\xa0\\xa0\\xa0\\xa0'\n+            'Member \"__set__\" is unknown',\n         ),\n         PyrightDiagnostic(\n             severity=\"information\",\n"
+    }
+  ]
+}

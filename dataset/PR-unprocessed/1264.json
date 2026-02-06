@@ -1,0 +1,22 @@
+{
+  "pr_number": 1264,
+  "title": "evolve: remove support for passing instances per kw",
+  "author": "hynek",
+  "reason": {
+    "description": "As per our deprecation policy.\r\n",
+    "commit_messages": [
+      "evolve: remove support for passing instances per kw\n\nAs per our deprecation policy.",
+      "Merge branch 'main' into evolve-kw"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_funcs.py",
+      "patch": "@@ -371,7 +371,8 @@ def evolve(*args, **changes):\n     Create a new instance, based on the first positional argument with\n     *changes* applied.\n \n-    :param inst: Instance of a class with *attrs* attributes.\n+    :param inst: Instance of a class with *attrs* attributes. *inst* must be\n+        passed as a positional argument.\n     :param changes: Keyword changes in the new copy.\n \n     :return: A copy of inst with *changes* incorporated.\n@@ -387,30 +388,16 @@ def evolve(*args, **changes):\n        *inst*. It will raise a warning until at least April 2024, after which\n        it will become an error. Always pass the instance as a positional\n        argument.\n+    .. versionchanged:: 24.1.0\n+       *inst* can't be passed as a keyword argument anymore.\n     \"\"\"\n-    # Try to get instance by positional argument first.\n-    # Use changes otherwise and warn it'll break.\n-    if args:\n-        try:\n-            (inst,) = args\n-        except ValueError:\n-            msg = f\"evolve() takes 1 positional argument, but {len(args)} were given\"\n-            raise TypeError(msg) from None\n-    else:\n-        try:\n-            inst = changes.pop(\"inst\")\n-        except KeyError:\n-            msg = \"evolve() missing 1 required positional argument: 'inst'\"\n-            raise TypeError(msg) from None\n-\n-        import warnings\n-\n-        warnings.warn(\n-            \"Passing the instance per keyword argument is deprecated and \"\n-            \"will stop working in, or after, April 2024.\",\n-            DeprecationWarning,\n-            stacklevel=2,\n+    try:\n+        (inst,) = args\n+    except ValueError:\n+        msg = (\n+            f\"evolve() takes 1 positional argument, but {len(args)} were given\"\n         )\n+        raise TypeError(msg) from None\n \n     cls = inst.__class__\n     attrs = fields(cls)\n"
+    },
+    {
+      "file": "tests/test_funcs.py",
+      "patch": "@@ -781,26 +781,13 @@ class Cls2:\n             obj1a, param1=obj2b\n         )\n \n-    def test_inst_kw(self):\n-        \"\"\"\n-        If `inst` is passed per kw argument, a warning is raised.\n-        See #1109\n-        \"\"\"\n-\n-        @attr.s\n-        class C:\n-            pass\n-\n-        with pytest.warns(DeprecationWarning) as wi:\n-            evolve(inst=C())\n-\n-        assert __file__ == wi.list[0].filename\n-\n     def test_no_inst(self):\n         \"\"\"\n         Missing inst argument raises a TypeError like Python would.\n         \"\"\"\n-        with pytest.raises(TypeError, match=r\"evolve\\(\\) missing 1\"):\n+        with pytest.raises(\n+            TypeError, match=r\"evolve\\(\\) takes 1 positional argument\"\n+        ):\n             evolve(x=1)\n \n     def test_too_many_pos_args(self):\n"
+    }
+  ]
+}

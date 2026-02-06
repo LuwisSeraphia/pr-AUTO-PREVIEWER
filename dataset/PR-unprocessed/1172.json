@@ -1,0 +1,27 @@
+{
+  "pr_number": 1172,
+  "title": "Allow subclassing of AttrsInstance and Protocol at once",
+  "author": "hynek",
+  "reason": {
+    "description": "Fixes #1133",
+    "commit_messages": [
+      "Allow subclassing of AttrsInstance and Protocol at once",
+      "Add news fragment",
+      "\"Fix\" coverage"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/__init__.py",
+      "patch": "@@ -9,6 +9,7 @@\n \n from . import converters, exceptions, filters, setters, validators\n from ._cmp import cmp_using\n+from ._compat import Protocol\n from ._config import get_run_validators, set_run_validators\n from ._funcs import asdict, assoc, astuple, evolve, has, resolve_types\n from ._make import (\n@@ -31,7 +32,7 @@\n dataclass = partial(attrs, auto_attribs=True)  # happy Easter ;)\n \n \n-class AttrsInstance:\n+class AttrsInstance(Protocol):\n     pass\n \n \n"
+    },
+    {
+      "file": "src/attr/_compat.py",
+      "patch": "@@ -18,6 +18,15 @@\n PY_3_12_PLUS = sys.version_info[:2] >= (3, 12)\n \n \n+if sys.version_info < (3, 8):\n+    try:\n+        from typing_extensions import Protocol\n+    except ImportError:  # pragma: no cover\n+        Protocol = object\n+else:\n+    from typing import Protocol  # noqa: F401\n+\n+\n def just_warn(*args, **kw):\n     warnings.warn(\n         \"Running interpreter doesn't sufficiently support code object \"\n"
+    },
+    {
+      "file": "tests/test_compat.py",
+      "patch": "@@ -4,6 +4,8 @@\n \n import pytest\n \n+import attr\n+\n \n @pytest.fixture(name=\"mp\")\n def _mp():\n@@ -50,3 +52,13 @@ def test_immutable(self, mp):\n \n         with pytest.raises(AttributeError, match=\"no attribute 'setdefault'\"):\n             mp.setdefault(\"x\")\n+\n+\n+def test_attrsinstance_subclass_protocol():\n+    \"\"\"\n+    It's possible to subclass AttrsInstance and Protocol at once.\n+    \"\"\"\n+\n+    class Foo(attr.AttrsInstance, attr._compat.Protocol):\n+        def attribute(self) -> int:\n+            ...\n"
+    }
+  ]
+}

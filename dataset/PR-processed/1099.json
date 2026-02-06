@@ -1,0 +1,31 @@
+{
+  "pr_number": 1099,
+  "title": "Flesh out resolve_types",
+  "author": "Tinche",
+  "reason": {
+    "description": "Trying to improve `resolve_types`.",
+    "commit_messages": [
+      "Flesh out resolve_types",
+      "[pre-commit.ci] auto fixes from pre-commit.com hooks\n\nfor more information, see https://pre-commit.ci",
+      "Add changelog entry",
+      "Fix flake?",
+      "Update 1099.change.md",
+      "Merge branch 'main' into tin/fix-resolve-types",
+      "Merge branch 'main' into tin/fix-resolve-types"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_compat.py",
+      "patch": "@@ -13,6 +13,7 @@\n \n \n PYPY = platform.python_implementation() == \"PyPy\"\n+PY_3_9_PLUS = sys.version_info[:2] >= (3, 9)\n PY310 = sys.version_info[:2] >= (3, 10)\n PY_3_12_PLUS = sys.version_info[:2] >= (3, 12)\n \n"
+    },
+    {
+      "file": "src/attr/_funcs.py",
+      "patch": "@@ -3,7 +3,7 @@\n \n import copy\n \n-from ._compat import get_generic_base\n+from ._compat import PY_3_9_PLUS, get_generic_base\n from ._make import NOTHING, _obj_setattr, fields\n from .exceptions import AttrsAttributeNotFoundError\n \n@@ -379,7 +379,9 @@ def evolve(inst, **changes):\n     return cls(**changes)\n \n \n-def resolve_types(cls, globalns=None, localns=None, attribs=None):\n+def resolve_types(\n+    cls, globalns=None, localns=None, attribs=None, include_extras=True\n+):\n     \"\"\"\n     Resolve any strings and forward annotations in type annotations.\n \n@@ -399,6 +401,10 @@ def resolve_types(cls, globalns=None, localns=None, attribs=None):\n     :param Optional[list] attribs: List of attribs for the given class.\n         This is necessary when calling from inside a ``field_transformer``\n         since *cls* is not an *attrs* class yet.\n+    :param bool include_extras: Resolve more accurately, if possible.\n+        Pass ``include_extras`` to ``typing.get_hints``, if supported by the\n+        typing module. On supported Python versions (3.9+), this resolves the\n+        types more accurately.\n \n     :raise TypeError: If *cls* is not a class.\n     :raise attrs.exceptions.NotAnAttrsClassError: If *cls* is not an *attrs*\n@@ -411,14 +417,20 @@ class and you didn't pass any attribs.\n \n     ..  versionadded:: 20.1.0\n     ..  versionadded:: 21.1.0 *attribs*\n+    ..  versionadded:: 23.1.0 *include_extras*\n \n     \"\"\"\n     # Since calling get_type_hints is expensive we cache whether we've\n     # done it already.\n     if getattr(cls, \"__attrs_types_resolved__\", None) != cls:\n         import typing\n \n-        hints = typing.get_type_hints(cls, globalns=globalns, localns=localns)\n+        kwargs = {\"globalns\": globalns, \"localns\": localns}\n+\n+        if PY_3_9_PLUS:\n+            kwargs[\"include_extras\"] = include_extras\n+\n+        hints = typing.get_type_hints(cls, **kwargs)\n         for field in fields(cls) if attribs is None else attribs:\n             if field.name in hints:\n                 # Since fields have been frozen we must work around it.\n"
+    },
+    {
+      "file": "tests/test_annotations.py",
+      "patch": "@@ -516,6 +516,34 @@ class C:\n         assert str is attr.fields(C).y.type\n         assert None is attr.fields(C).z.type\n \n+    @pytest.mark.skipif(\n+        sys.version_info[:2] < (3, 9),\n+        reason=\"Incompatible behavior on older Pythons\",\n+    )\n+    def test_extra_resolve(self):\n+        \"\"\"\n+        `get_type_hints` returns extra type hints.\n+        \"\"\"\n+        from typing import Annotated\n+\n+        globals = {\"Annotated\": Annotated}\n+\n+        @attr.define\n+        class C:\n+            x: 'Annotated[float, \"test\"]'\n+\n+        attr.resolve_types(C, globals)\n+\n+        assert attr.fields(C).x.type == Annotated[float, \"test\"]\n+\n+        @attr.define\n+        class D:\n+            x: 'Annotated[float, \"test\"]'\n+\n+        attr.resolve_types(D, globals, include_extras=False)\n+\n+        assert attr.fields(D).x.type == float\n+\n     def test_resolve_types_auto_attrib(self, slots):\n         \"\"\"\n         Types can be resolved even when strings are involved.\n"
+    }
+  ]
+}

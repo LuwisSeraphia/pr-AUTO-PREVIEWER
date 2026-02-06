@@ -1,0 +1,22 @@
+{
+  "pr_number": 1119,
+  "title": "Stop raising a deprecation warning on assoc",
+  "author": "hynek",
+  "reason": {
+    "description": "c.f. https://github.com/python-attrs/attrs/pull/1117#issuecomment-1494624098",
+    "commit_messages": [
+      "Stop warning about assoc & explain why",
+      "Fix tests"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/_funcs.py",
+      "patch": "@@ -316,6 +316,14 @@ def assoc(inst, **changes):\n     \"\"\"\n     Copy *inst* and apply *changes*.\n \n+    This is different from `evolve` that applies the changes to the arguments\n+    that create the new instance.\n+\n+    `evolve`'s behavior is preferable, but there are `edge cases`_ where it\n+    doesn't work. Therefore `assoc` is deprecated, but will not be removed.\n+\n+    .. _`edge cases`: https://github.com/python-attrs/attrs/issues/251\n+\n     :param inst: Instance of a class with *attrs* attributes.\n     :param changes: Keyword changes in the new copy.\n \n@@ -331,13 +339,6 @@ def assoc(inst, **changes):\n         This function will not be removed du to the slightly different approach\n         compared to `attrs.evolve`.\n     \"\"\"\n-    import warnings\n-\n-    warnings.warn(\n-        \"assoc is deprecated and will be removed after 2018/01.\",\n-        DeprecationWarning,\n-        stacklevel=2,\n-    )\n     new = copy.copy(inst)\n     attrs = fields(inst.__class__)\n     for k, v in changes.items():\n"
+    },
+    {
+      "file": "tests/test_funcs.py",
+      "patch": "@@ -467,8 +467,7 @@ class C:\n             pass\n \n         i1 = C()\n-        with pytest.deprecated_call():\n-            i2 = assoc(i1)\n+        i2 = assoc(i1)\n \n         assert i1 is not i2\n         assert i1 == i2\n@@ -479,8 +478,7 @@ def test_no_changes(self, C):\n         No changes means a verbatim copy.\n         \"\"\"\n         i1 = C()\n-        with pytest.deprecated_call():\n-            i2 = assoc(i1)\n+        i2 = assoc(i1)\n \n         assert i1 is not i2\n         assert i1 == i2\n@@ -497,8 +495,7 @@ def test_change(self, C, data):\n         chosen_names = data.draw(st.sets(st.sampled_from(field_names)))\n         change_dict = {name: data.draw(st.integers()) for name in chosen_names}\n \n-        with pytest.deprecated_call():\n-            changed = assoc(original, **change_dict)\n+        changed = assoc(original, **change_dict)\n \n         for k, v in change_dict.items():\n             assert getattr(changed, k) == v\n@@ -527,22 +524,7 @@ class C:\n             x = attr.ib()\n             y = attr.ib()\n \n-        with pytest.deprecated_call():\n-            assert C(3, 2) == assoc(C(1, 2), x=3)\n-\n-    def test_warning(self):\n-        \"\"\"\n-        DeprecationWarning points to the correct file.\n-        \"\"\"\n-\n-        @attr.s\n-        class C:\n-            x = attr.ib()\n-\n-        with pytest.warns(DeprecationWarning) as wi:\n-            assert C(2) == assoc(C(1), x=2)\n-\n-        assert __file__ == wi.list[0].filename\n+        assert C(3, 2) == assoc(C(1, 2), x=3)\n \n \n class TestEvolve:\n"
+    }
+  ]
+}

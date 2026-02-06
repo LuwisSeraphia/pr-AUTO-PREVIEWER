@@ -1,0 +1,26 @@
+{
+  "pr_number": 1122,
+  "title": "Accept tuples in attrs.validators.optional",
+  "author": "hynek",
+  "reason": {
+    "description": "It's more of an oversight that it accepts only lists.\r\n\r\nFixes #937 ",
+    "commit_messages": [
+      "Accept tuples in attrs.validators.optional\n\nFixes #937",
+      "Add news fragment"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/validators.py",
+      "patch": "@@ -270,15 +270,16 @@ def optional(validator):\n     which can be set to ``None`` in addition to satisfying the requirements of\n     the sub-validator.\n \n-    :param validator: A validator (or a list of validators) that is used for\n-        non-``None`` values.\n-    :type validator: callable or `list` of callables.\n+    :param Callable | tuple[Callable] | list[Callable] validator: A validator\n+        (or validators) that is used for non-``None`` values.\n \n     .. versionadded:: 15.1.0\n     .. versionchanged:: 17.1.0 *validator* can be a list of validators.\n+    .. versionchanged:: 23.1.0 *validator* can also be a tuple of validators.\n     \"\"\"\n-    if isinstance(validator, list):\n+    if isinstance(validator, (list, tuple)):\n         return _OptionalValidator(_AndValidator(validator))\n+\n     return _OptionalValidator(validator)\n \n \n"
+    },
+    {
+      "file": "tests/test_validators.py",
+      "patch": "@@ -384,7 +384,12 @@ def test_repr(self, ifoo):\n \n \n @pytest.mark.parametrize(\n-    \"validator\", [instance_of(int), [always_pass, instance_of(int)]]\n+    \"validator\",\n+    [\n+        instance_of(int),\n+        [always_pass, instance_of(int)],\n+        (always_pass, instance_of(int)),\n+    ],\n )\n class TestOptional:\n     \"\"\"\n@@ -437,6 +442,11 @@ def test_repr(self, validator):\n                 \"<optional validator for _AndValidator(_validators=[{func}, \"\n                 \"<instance_of validator for type <class 'int'>>]) or None>\"\n             ).format(func=repr(always_pass))\n+        elif isinstance(validator, tuple):\n+            repr_s = (\n+                \"<optional validator for _AndValidator(_validators=({func}, \"\n+                \"<instance_of validator for type <class 'int'>>)) or None>\"\n+            ).format(func=repr(always_pass))\n         else:\n             repr_s = (\n                 \"<optional validator for <instance_of validator for type \"\n"
+    },
+    {
+      "file": "tests/typing_example.py",
+      "patch": "@@ -236,6 +236,15 @@ class Validated:\n     p: Any = attr.ib(\n         validator=attr.validators.not_(attr.validators.in_(\"abc\"), msg=None)\n     )\n+    q: Any = attr.ib(\n+        validator=attrs.validators.optional(attrs.validators.instance_of(C))\n+    )\n+    r: Any = attr.ib(\n+        validator=attrs.validators.optional([attrs.validators.instance_of(C)])\n+    )\n+    s: Any = attr.ib(\n+        validator=attrs.validators.optional((attrs.validators.instance_of(C),))\n+    )\n \n \n @attr.define\n"
+    }
+  ]
+}

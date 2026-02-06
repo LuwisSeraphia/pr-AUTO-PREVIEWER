@@ -1,0 +1,24 @@
+{
+  "pr_number": 1120,
+  "title": "Deprecate zope-interface support",
+  "author": "hynek",
+  "reason": {
+    "description": "It's a C-based dependency for a dozen of lines of code.\r\n\r\nIf there's interest, we can publish it as a separate package.",
+    "commit_messages": [
+      "Deprecate zope-interface support\n\nIt's a C-based dependency for a dozen of lines of code.\n\nIf there's interest, we can publish it as a separate package.",
+      "Add news fragment",
+      "Merge branch 'main' into deprecate-zi",
+      "Merge branch 'main' into deprecate-zi"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/validators.py",
+      "patch": "@@ -244,7 +244,17 @@ def provides(interface):\n     :raises TypeError: With a human readable error message, the attribute\n         (of type `attrs.Attribute`), the expected interface, and the\n         value it got.\n+\n+    .. deprecated:: 23.1.0\n     \"\"\"\n+    import warnings\n+\n+    warnings.warn(\n+        \"attrs's zope-interface support is deprecated and will be removed in, \"\n+        \"or after, April 2024.\",\n+        DeprecationWarning,\n+        stacklevel=2,\n+    )\n     return _ProvidesValidator(interface)\n \n \n"
+    },
+    {
+      "file": "tests/test_validators.py",
+      "patch": "@@ -349,7 +349,9 @@ class C:\n             def f(self):\n                 pass\n \n-        v = provides(ifoo)\n+        with pytest.deprecated_call():\n+            v = provides(ifoo)\n+\n         v(None, simple_attr(\"x\"), C())\n \n     def test_fail(self, ifoo):\n@@ -359,9 +361,12 @@ def test_fail(self, ifoo):\n         value = object()\n         a = simple_attr(\"x\")\n \n-        v = provides(ifoo)\n+        with pytest.deprecated_call():\n+            v = provides(ifoo)\n+\n         with pytest.raises(TypeError) as e:\n             v(None, a, value)\n+\n         assert (\n             \"'x' must provide {interface!r} which {value!r} doesn't.\".format(\n                 interface=ifoo, value=value\n@@ -375,7 +380,9 @@ def test_repr(self, ifoo):\n         \"\"\"\n         Returned validator has a useful `__repr__`.\n         \"\"\"\n-        v = provides(ifoo)\n+        with pytest.deprecated_call():\n+            v = provides(ifoo)\n+\n         assert (\n             \"<provides validator for interface {interface!r}>\".format(\n                 interface=ifoo\n"
+    }
+  ]
+}

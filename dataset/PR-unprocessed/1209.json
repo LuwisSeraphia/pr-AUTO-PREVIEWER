@@ -1,0 +1,18 @@
+{
+  "pr_number": 1209,
+  "title": "Fix for a tiny typo in `_MinLengthValidator`",
+  "author": "ckutlu",
+  "reason": {
+    "description": "# Summary\n\ntiny typo fix for min length validator's error string\n\n# Pull Request Check List\n\n<!--\nThis is just a friendly reminder about the most common mistakes.\nPlease make sure that you tick all boxes.\nBut please read our [contribution guide](https://github.com/python-attrs/attrs/blob/main/.github/CONTRIBUTING.md) at least once, it will save you unnecessary review cycles!\n\nIf an item doesn't apply to your pull request, **check it anyway** to make it apparent that there's nothing left to do.\nIf your pull request is a documentation fix or a trivial typo, feel free to delete the whole thing.\n-->\n\n- [x] Added **tests** for changed code.\n  Our CI fails if coverage is not 100%.\n- [x] New features have been added to our [Hypothesis testing strategy](https://github.com/python-attrs/attrs/blob/main/tests/strategies.py).\n- [x] Changes or additions to public APIs are reflected in our type stubs (files ending in ``.pyi``).\n    - [x] ...and used in the stub test file `tests/typing_example.py`.\n    - [x] If they've been added to `attr/__init__.pyi`, they've *also* been re-imported in `attrs/__init__.pyi`.\n- [x] Updated **documentation** for changed code.\n    - [x] New functions/classes have to be added to `docs/api.rst` by hand.\n    - [x] Changes to the signature of `@attr.s()` have to be added by hand too.\n    - [x] Changed/added classes/methods/functions have appropriate `versionadded`, `versionchanged`, or `deprecated` [directives](http://www.sphinx-doc.org/en/stable/markup/para.html#directive-versionadded).\n          The next version is the second number in the current release + 1.\n          The first number represents the current year.\n          So if the current version on PyPI is 22.2.0, the next version is gonna be 22.3.0.\n          If the next version is the first in the new year, it'll be 23.1.0.\n- [x] Documentation in `.rst` files is written using [semantic newlines](https://rhodesmill.org/brandon/2012/one-sentence-per-line/).\n- [x] Changes (and possible deprecations) have news fragments in [`changelog.d`](https://github.com/python-attrs/attrs/blob/main/changelog.d).\n- [x] Consider granting [push permissions to the PR branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork), so maintainers can fix minor issues themselves without pestering you.\n\n<!--\nIf you have *any* questions to *any* of the points above, just **submit and ask**!\nThis checklist is here to *help* you, not to deter you from contributing!\n-->\n",
+    "commit_messages": [
+      "tiny typo fix for min length validator's error string",
+      "[pre-commit.ci] auto fixes from pre-commit.com hooks\n\nfor more information, see https://pre-commit.ci"
+    ]
+  },
+  "python_diffs": [
+    {
+      "file": "src/attr/validators.py",
+      "patch": "@@ -550,7 +550,7 @@ def __call__(self, inst, attr, value):\n         We use a callable class to be able to change the ``__repr__``.\n         \"\"\"\n         if len(value) < self.min_length:\n-            msg = f\"Length of '{attr.name}' must be => {self.min_length}: {len(value)}\"\n+            msg = f\"Length of '{attr.name}' must be >= {self.min_length}: {len(value)}\"\n             raise ValueError(msg)\n \n     def __repr__(self):\n"
+    }
+  ]
+}
