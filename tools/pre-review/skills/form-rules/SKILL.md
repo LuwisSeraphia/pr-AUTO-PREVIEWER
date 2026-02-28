@@ -91,4 +91,4 @@ Strict classification not required.
 - Only append or modify rules supported by batch evidence  
 - Preserve category/subcategory structure; add subcategories only if necessary  
 - Ref lists use real filenames, sorted; English-only rules  
-- Do not reprocess prior batches or logs; ensure batch reproducibility
+- Do not reprocess prior batches or logs; ensure batch reproducibility.

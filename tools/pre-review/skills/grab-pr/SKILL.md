@@ -19,4 +19,4 @@ Use this skill to download PR patch records (JSON) from the configured GitHub re
 ## Notes
 - Respects `config.py` paths and batch settings (`initialize_per_page`, `grab_max_records`).  
 - Network calls rely on the configured token if present; unauthenticated mode sleeps between pages to avoid rate limits.
-- Do not reprocess or move files here; downstream skills handle processing.
+- Do not reprocess or move files here; downstream skills handle processing

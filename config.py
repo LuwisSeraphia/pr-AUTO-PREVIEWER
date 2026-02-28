@@ -36,6 +36,7 @@ def _merge(base: dict, override: dict):
             base[key] = val
 
 
+
 def load_config() -> dict:
     """Load config.json and merge with defaults, resolving paths to absolute."""
     cfg = copy.deepcopy(DEFAULT_CONFIG)

@@ -46,4 +46,4 @@ Use this skill to evaluate local, uncommitted changes from `git diff` with enric
 - Findings map directly to existing `rules.md` entries; no fabricated rules.
 - Suggestions are actionable and specific to the observed diffs and their context.
 - Warn explicitly when context is missing; do not claim high confidence without it.
-- Keep wording and tone consistent with the template; avoid stylistic drift.
+- Keep wording and tone consistent with the template; avoid stylistic drift

@@ -134,4 +134,7 @@ When doing prompt design, remember:
 - `rules.md` starts empty—complete at least one `grab-pr` + `form-rules` cycle before using `preview`.
 - Each rule batch writes a dialog log in `dialog/`; these logs are helpful for auditing what rules were added or modified.
 
+
 With config and token in place, you can loop through harvest → rule update → preview to keep the rules relevant and catch regressions before opening a PR.
+
+
