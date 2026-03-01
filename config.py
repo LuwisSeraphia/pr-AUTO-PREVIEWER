@@ -7,7 +7,7 @@ DEFAULT_CONFIG = {
     "github": {
         "owner": "python-attrs",
         "repo": "attrs",
-        "token": "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",
+        "token": "...",
         "token_env": "GITHUB_TOKEN",
         "user_agent": "python-attrs-pr-scraper",
     },
